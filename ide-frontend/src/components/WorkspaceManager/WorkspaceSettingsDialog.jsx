@@ -51,6 +51,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '../ui/alert-dialog';
+import styles from './WorkspaceSettingsDialog.module.css';
 
 const RUNTIME_OPTIONS = [
   { value: 'node', label: 'Node.js' },
@@ -216,10 +217,10 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className={styles.dialogContent}>
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <Settings className="h-5 w-5" />
+          <DialogTitle className={styles.dialogTitle}>
+            <Settings className={styles.titleIcon} />
             <span>Workspace Settings</span>
           </DialogTitle>
           <DialogDescription>
@@ -228,54 +229,54 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
         </DialogHeader>
 
         {errors.general && (
-          <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
+          <div className={styles.errorAlert}>
             {errors.general}
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className={styles.tabs}>
+          <TabsList className={styles.tabsList}>
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="collaborators">
-              <Users className="h-4 w-4 mr-1" />
+              <Users className={styles.tabIcon} />
               Collaborators
             </TabsTrigger>
             <TabsTrigger value="danger">Danger Zone</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="general" className="space-y-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
+          <TabsContent value="general" className={styles.tabContent}>
+            <div className={styles.formSection}>
+              <div className={styles.formGroup}>
                 <Label htmlFor="name">Workspace Name</Label>
                 <Input
                   id="name"
                   value={formData.name || ''}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   disabled={!isOwner}
-                  className={errors.name ? 'border-destructive' : ''}
+                  className={errors.name ? styles.inputError : ''}
                 />
                 {errors.name && (
-                  <p className="text-sm text-destructive">{errors.name}</p>
+                  <p className={styles.errorText}>{errors.name}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className={styles.formGroup}>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description || ''}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   disabled={!isOwner}
-                  className={errors.description ? 'border-destructive' : ''}
+                  className={errors.description ? styles.inputError : ''}
                   rows={3}
                 />
                 {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description}</p>
+                  <p className={styles.errorText}>{errors.description}</p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
                   <Label htmlFor="runtime">Runtime</Label>
                   <Select
                     value={formData.runtime || 'node'}
@@ -328,29 +329,29 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className={styles.checkboxContainer}>
                 <Checkbox
                   id="isPublic"
                   checked={formData.isPublic || false}
                   onCheckedChange={(checked) => handleInputChange('isPublic', checked)}
                   disabled={!isOwner}
                 />
-                <Label htmlFor="isPublic" className="text-sm">
+                <Label htmlFor="isPublic" className={styles.checkboxLabel}>
                   Make this workspace public
                 </Label>
               </div>
 
               {isOwner && (
-                <div className="flex justify-end">
+                <div className={styles.saveButtonContainer}>
                   <Button onClick={handleSaveSettings} disabled={loading}>
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className={styles.spinIcon} />
                         Saving...
                       </>
                     ) : (
                       <>
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className={styles.saveIcon} />
                         Save Changes
                       </>
                     )}
@@ -360,12 +361,12 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
             </div>
           </TabsContent>
 
-          <TabsContent value="collaborators" className="space-y-4">
+          <TabsContent value="collaborators" className={styles.collaboratorsSection}>
             {isOwner && (
-              <div className="space-y-4 p-4 border rounded-lg">
-                <h4 className="font-medium">Add Collaborator</h4>
-                <div className="flex space-x-2">
-                  <div className="flex-1">
+              <div className={styles.addCollaboratorPanel}>
+                <h4 className={styles.addCollaboratorTitle}>Add Collaborator</h4>
+                <div className={styles.addCollaboratorForm}>
+                  <div className={styles.emailInputField}>
                     <Input
                       placeholder="Enter email address"
                       value={collaboratorEmail}
@@ -373,14 +374,14 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                       className={errors.collaborator ? 'border-destructive' : ''}
                     />
                     {errors.collaborator && (
-                      <p className="text-sm text-destructive mt-1">{errors.collaborator}</p>
+                      <p className={styles.errorMessage}>{errors.collaborator}</p>
                     )}
                   </div>
                   <Select
                     value={collaboratorRole}
                     onValueChange={setCollaboratorRole}
                   >
-                    <SelectTrigger className="w-32">
+                    <SelectTrigger className={styles.roleSelectField}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -392,27 +393,27 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                     </SelectContent>
                   </Select>
                   <Button onClick={handleAddCollaborator} disabled={loading}>
-                    <Mail className="h-4 w-4 mr-1" />
+                    <Mail className={styles.addIcon} />
                     Invite
                   </Button>
                 </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <h4 className="font-medium">Current Collaborators</h4>
+            <div className={styles.collaboratorsList}>
+              <h4 className={styles.collaboratorsTitle}>Current Collaborators</h4>
               
               {/* Owner */}
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Crown className="h-4 w-4 text-yellow-500" />
-                  <div>
-                    <p className="font-medium">{workspace?.owner?.name}</p>
-                    <p className="text-sm text-muted-foreground">{workspace?.owner?.email}</p>
+              <div className={styles.ownerItem}>
+                <div className={styles.ownerInfo}>
+                  <Crown className={styles.crownIcon} />
+                  <div className={styles.userDetails}>
+                    <h5>{workspace?.owner?.name}</h5>
+                    <p className={styles.userEmail}>{workspace?.owner?.email}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                <div className={styles.ownerActions}>
+                  <span className={styles.ownerBadge}>
                     Owner
                   </span>
                 </div>
@@ -424,22 +425,22 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                 const RoleIcon = roleOption?.icon || Eye;
                 
                 return (
-                  <div key={collaborator.userId._id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <RoleIcon className="h-4 w-4" />
-                      <div>
-                        <p className="font-medium">{collaborator.userId.name}</p>
-                        <p className="text-sm text-muted-foreground">{collaborator.userId.email}</p>
+                  <div key={collaborator.userId._id} className={styles.collaboratorItem}>
+                    <div className={styles.collaboratorInfo}>
+                      <RoleIcon className={styles.roleIcon} />
+                      <div className={styles.userDetails}>
+                        <h5>{collaborator.userId.name}</h5>
+                        <p className={styles.userEmail}>{collaborator.userId.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className={styles.collaboratorActions}>
                       {isOwner ? (
                         <>
                           <Select
                             value={collaborator.role}
                             onValueChange={(newRole) => handleUpdateCollaboratorRole(collaborator.userId._id, newRole)}
                           >
-                            <SelectTrigger className="w-24">
+                            <SelectTrigger className={styles.roleSelect}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -454,12 +455,13 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleRemoveCollaborator(collaborator.userId._id)}
+                            className={styles.removeButton}
                           >
-                            <UserMinus className="h-4 w-4" />
+                            <UserMinus className={styles.removeIcon} />
                           </Button>
                         </>
                       ) : (
-                        <span className="text-sm bg-secondary px-2 py-1 rounded">
+                        <span className={styles.collaboratorBadge}>
                           {roleOption?.label}
                         </span>
                       )}
@@ -469,37 +471,37 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
               })}
 
               {(!workspace?.collaborators || workspace.collaborators.length === 0) && (
-                <p className="text-sm text-muted-foreground text-center py-4">
+                <p className={styles.emptyMessage}>
                   No collaborators yet. Invite team members to start collaborating!
                 </p>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="danger" className="space-y-4">
-            <div className="space-y-4">
-              <div className="p-4 border border-orange-200 rounded-lg">
-                <h4 className="font-medium text-orange-800 mb-2">Duplicate Workspace</h4>
-                <p className="text-sm text-muted-foreground mb-3">
+          <TabsContent value="danger" className={styles.actionsSection}>
+            <div className={styles.actionsSection}>
+              <div className={styles.actionPanel}>
+                <h4 className={styles.duplicateTitle}>Duplicate Workspace</h4>
+                <p className={styles.duplicateDescription}>
                   Create a copy of this workspace with all files and settings.
                 </p>
                 <Button variant="outline" onClick={handleDuplicateWorkspace} disabled={loading}>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className={styles.duplicateIcon} />
                   Duplicate Workspace
                 </Button>
               </div>
 
               {isOwner && (
                 <>
-                  <div className="p-4 border border-yellow-200 rounded-lg">
-                    <h4 className="font-medium text-yellow-800 mb-2">Archive Workspace</h4>
-                    <p className="text-sm text-muted-foreground mb-3">
+                  <div className={`${styles.actionPanel} ${styles.archivePanel}`}>
+                    <h4 className={styles.archiveTitle}>Archive Workspace</h4>
+                    <p className={styles.archiveDescription}>
                       Archive this workspace. It can be restored later from your archived workspaces.
                     </p>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" className="text-yellow-700 border-yellow-300">
-                          <Archive className="h-4 w-4 mr-2" />
+                        <Button variant="outline" className={styles.archiveButton}>
+                          <Archive className={styles.archiveIcon} />
                           Archive Workspace
                         </Button>
                       </AlertDialogTrigger>
@@ -521,15 +523,15 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                     </AlertDialog>
                   </div>
 
-                  <div className="p-4 border border-red-200 rounded-lg">
-                    <h4 className="font-medium text-red-800 mb-2">Delete Workspace</h4>
-                    <p className="text-sm text-muted-foreground mb-3">
+                  <div className={`${styles.actionPanel} ${styles.deletePanel}`}>
+                    <h4 className={styles.deleteTitle}>Delete Workspace</h4>
+                    <p className={styles.deleteDescription}>
                       Permanently delete this workspace. This action cannot be undone.
                     </p>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className={styles.deleteIcon} />
                           Delete Workspace
                         </Button>
                       </AlertDialogTrigger>
@@ -545,7 +547,7 @@ export const WorkspaceSettingsDialog = ({ workspace, open, onOpenChange }) => {
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction 
                             onClick={handleDeleteWorkspace}
-                            className="bg-red-600 hover:bg-red-700"
+                            className={styles.deleteButton}
                           >
                             Delete Permanently
                           </AlertDialogAction>

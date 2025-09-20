@@ -23,12 +23,25 @@ export function IDELayout() {
     document.documentElement.setAttribute('data-theme', 'dark')
   }, [])
 
-  // For demo purposes, set a default workspace ID if none exists
+  // For development mode, use a simple workspace initialization
   useEffect(() => {
-    if (!currentWorkspaceId) {
-      useWorkspaceStore.getState().setCurrentWorkspace('demo-workspace-id');
+    // In development mode with auth disabled, always use an existing test workspace
+    if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
+      // Clear any cached workspace data that might have the old demo workspace ID
+      try {
+        localStorage.removeItem('workspace-store'); // Clear the entire cache for clean start
+        localStorage.removeItem('file-store'); // Also clear file store cache if it exists
+      } catch (e) {
+        console.warn('Could not clear workspace cache:', e);
+      }
+      
+      // Set the test workspace
+      useWorkspaceStore.getState().setCurrentWorkspace('test-workspace-123');
+    } else if (!currentWorkspaceId) {
+      // Only set default in non-dev mode if no workspace is set
+      useWorkspaceStore.getState().setCurrentWorkspace('test-workspace-123');
     }
-  }, [currentWorkspaceId])
+  }, []) // Remove currentWorkspaceId dependency to run only once
 
   const handleFileOpen = (filePath, fileName) => {
     openFile(filePath, fileName)

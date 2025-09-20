@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { FileExplorer } from './FileExplorer';
+import FileExplorer from './FileExplorer';
 import { useFileStore } from '../../stores/fileStore';
 
 // Mock the file store

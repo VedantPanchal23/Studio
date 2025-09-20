@@ -116,7 +116,17 @@ export function XTermTerminal({ terminalId, settings }) {
 
     // Open terminal in DOM
     terminal.open(terminalRef.current)
-    fit.fit()
+    
+    // Wait for the DOM to be ready before fitting
+    setTimeout(() => {
+      try {
+        if (terminalRef.current && terminalRef.current.offsetWidth > 0) {
+          fit.fit()
+        }
+      } catch (error) {
+        console.warn('Terminal fit error:', error)
+      }
+    }, 100)
 
     // Store references
     terminalInstance.current = terminal
@@ -148,8 +158,12 @@ export function XTermTerminal({ terminalId, settings }) {
 
     // Handle window resize
     const handleResize = () => {
-      if (fit) {
-        fit.fit()
+      if (fit && terminalRef.current && terminalRef.current.offsetWidth > 0) {
+        try {
+          fit.fit()
+        } catch (error) {
+          console.warn('Terminal resize error:', error)
+        }
       }
     }
 
@@ -174,8 +188,14 @@ export function XTermTerminal({ terminalId, settings }) {
       terminalInstance.current.options.cursorBlink = settings.cursorBlink
       
       // Fit terminal after settings change
-      if (fitAddon.current) {
-        setTimeout(() => fitAddon.current.fit(), 0)
+      if (fitAddon.current && terminalRef.current && terminalRef.current.offsetWidth > 0) {
+        setTimeout(() => {
+          try {
+            fitAddon.current.fit()
+          } catch (error) {
+            console.warn('Terminal settings fit error:', error)
+          }
+        }, 100)
       }
     }
   }, [settings])
@@ -216,7 +236,7 @@ export function XTermTerminal({ terminalId, settings }) {
         // Initialize terminal session with workspace ID
         websocketService.emit('terminal:create', {
           terminalId,
-          workspaceId: currentWorkspaceId || 'demo-workspace-id',
+          workspaceId: currentWorkspaceId || 'test-workspace-123',
           cols: terminal.cols,
           rows: terminal.rows,
           shell: navigator.platform.includes('Win') ? 'cmd.exe' : '/bin/bash'

@@ -1,0 +1,267 @@
+/* FileExplorer Component Styles */
+
+.container {
+  height: 100%;
+  background-color: var(--color-background-explorer);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border-explorer);
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-explorer-header);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.actionButton {
+  padding: 0.25rem;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-explorer-header);
+}
+
+.actionIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.searchSection {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border-explorer);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.searchContainer {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-muted);
+}
+
+.searchInput {
+  width: 100%;
+  padding-left: 2rem;
+  padding-right: 0.75rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  background-color: var(--color-background-input);
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--color-text-explorer-header);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sortControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sortButton {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.5rem 0.25rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.sortButton:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-explorer-header);
+}
+
+.sortButtonActive {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text-explorer-header);
+}
+
+.sortIcon {
+  display: inline;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-explorer-header);
+}
+
+.toggleButtonActive {
+  color: var(--color-text-explorer-header);
+}
+
+.sortIcon {
+  display: inline;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text-explorer-header);
+}
+
+.toggleIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.errorBanner {
+  padding: 0.5rem;
+  background-color: rgba(185, 28, 28, 0.2);
+  border-bottom: 1px solid rgb(185, 28, 28);
+  color: rgb(248, 113, 113);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.errorClose {
+  color: rgb(252, 165, 165);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius);
+  transition: color 0.2s ease;
+}
+
+.errorClose:hover {
+  color: rgb(254, 202, 202);
+}
+
+.fileList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.loadingState {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.loadingIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 0.5rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.emptyState {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.emptyIcon {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto 0.5rem;
+}
+
+.emptyLink {
+  margin-top: 0.5rem;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.emptyLink:hover {
+  color: var(--color-primary-dark);
+}
+
+.contextMenuIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.contextMenuDanger {
+  color: rgb(248, 113, 113);
+}

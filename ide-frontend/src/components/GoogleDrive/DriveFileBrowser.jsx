@@ -30,6 +30,7 @@ import {
 } from '../ui/dropdown-menu';
 import useDriveStore from '../../stores/driveStore';
 import { formatBytes, formatDate } from '../../utils/formatters';
+import styles from './DriveFileBrowser.module.css';
 
 const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
   const {
@@ -177,57 +178,57 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
 
   const getFileIcon = (file) => {
     if (file.mimeType === 'application/vnd.google-apps.folder') {
-      return <Folder className="h-5 w-5 text-blue-500" />;
+      return <Folder className={`${styles.fileIcon} ${styles.folderIcon}`} />;
     }
 
     const mimeType = file.mimeType.toLowerCase();
     
     if (mimeType.startsWith('image/')) {
-      return <Image className="h-5 w-5 text-green-500" />;
+      return <Image className={`${styles.fileIcon} ${styles.imageIcon}`} />;
     }
     
     if (mimeType.startsWith('video/')) {
-      return <Video className="h-5 w-5 text-purple-500" />;
+      return <Video className={`${styles.fileIcon} ${styles.videoIcon}`} />;
     }
     
     if (mimeType.startsWith('audio/')) {
-      return <Music className="h-5 w-5 text-orange-500" />;
+      return <Music className={`${styles.fileIcon} ${styles.musicIcon}`} />;
     }
     
     if (mimeType.includes('zip') || mimeType.includes('archive')) {
-      return <Archive className="h-5 w-5 text-yellow-500" />;
+      return <Archive className={`${styles.fileIcon} ${styles.archiveIcon}`} />;
     }
     
     if (mimeType.includes('javascript') || mimeType.includes('typescript') || 
         mimeType.includes('python') || mimeType.includes('java')) {
-      return <Code className="h-5 w-5 text-indigo-500" />;
+      return <Code className={`${styles.fileIcon} ${styles.codeIcon}`} />;
     }
     
     if (mimeType.includes('text') || mimeType.includes('json') || mimeType.includes('xml')) {
-      return <FileText className="h-5 w-5 text-gray-500" />;
+      return <FileText className={`${styles.fileIcon} ${styles.textIcon}`} />;
     }
     
-    return <File className="h-5 w-5 text-gray-400" />;
+    return <File className={`${styles.fileIcon} ${styles.defaultIcon}`} />;
   };
 
   const displayFiles = searchQuery ? searchResults : files;
 
   return (
-    <div className="space-y-4">
+    <div className={styles.browser}>
       {/* Search and Navigation */}
-      <div className="flex items-center space-x-2">
-        <form onSubmit={handleSearch} className="flex-1 flex space-x-2">
+      <div className={styles.header}>
+        <form onSubmit={handleSearch} className={styles.searchForm}>
           <Input
             placeholder="Search files in Drive..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1"
+            className={styles.searchInput}
           />
-          <Button type="submit" disabled={isSearching || !searchQuery.trim()}>
+          <Button type="submit" disabled={isSearching || !searchQuery.trim()} className={styles.searchButton}>
             {isSearching ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className={styles.loadingIcon} />
             ) : (
-              <Search className="h-4 w-4" />
+              <Search className={styles.searchIcon} />
             )}
           </Button>
           {searchQuery && (
@@ -241,31 +242,34 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
           variant="outline"
           onClick={() => loadFiles(currentFolder)}
           disabled={isLoading}
+          className={styles.refreshButton}
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`${styles.refreshIcon} ${isLoading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
       {/* Breadcrumb Navigation */}
       {folderPath.length > 0 && !searchQuery && (
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <Button variant="ghost" size="sm" onClick={handleBackClick}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back
-          </Button>
-          <span>/</span>
-          {folderPath.map((folder, index) => (
-            <React.Fragment key={folder.id}>
-              <span>{folder.name}</span>
-              {index < folderPath.length - 1 && <span>/</span>}
-            </React.Fragment>
-          ))}
+        <div className={styles.navigation}>
+          <div className={styles.breadcrumb}>
+            <button className={styles.backButton} onClick={handleBackClick}>
+              <ArrowLeft className={styles.backIcon} />
+              Back
+            </button>
+            <span>/</span>
+            {folderPath.map((folder, index) => (
+              <React.Fragment key={folder.id}>
+                <span>{folder.name}</span>
+                {index < folderPath.length - 1 && <span>/</span>}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+      <div className={styles.controls}>
+        <div className={styles.controlsLeft}>
           {selectedFiles.length > 0 && (
             <Badge variant="secondary">
               {selectedFiles.length} selected
@@ -273,14 +277,15 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
           )}
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className={styles.controlsRight}>
           {!searchQuery && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowCreateFolder(true)}
+              className={styles.createButton}
             >
-              <Folder className="h-4 w-4 mr-1" />
+              <Folder className={styles.createIcon} />
               New Folder
             </Button>
           )}
@@ -294,12 +299,12 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
             <CardTitle>Create New Folder</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleCreateFolder} className="flex space-x-2">
+            <form onSubmit={handleCreateFolder} className={styles.createForm}>
               <Input
                 placeholder="Folder name"
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
-                className="flex-1"
+                className={styles.grow}
                 autoFocus
               />
               <Button type="submit" disabled={!newFolderName.trim()}>
@@ -322,46 +327,48 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
 
       {/* Error Display */}
       {error && (
-        <Alert>
+        <Alert className={styles.errorAlert}>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Files List */}
       <Card>
-        <CardContent className="p-0">
+        <CardContent className={styles.cardContent}>
           {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            <div className={styles.loadingState}>
+              <Loader2 className={styles.loadingIcon} />
               <span>Loading files...</span>
             </div>
           ) : displayFiles.length === 0 ? (
-            <div className="text-center p-8 text-gray-500">
-              {searchQuery ? 'No files found matching your search.' : 'No files in this folder.'}
+            <div className={styles.emptyState}>
+              <div className={styles.emptyDescription}>
+                {searchQuery ? 'No files found matching your search.' : 'No files in this folder.'}
+              </div>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className={styles.fileListView}>
               {displayFiles.map((file) => (
                 <div
                   key={file.id}
-                  className={`flex items-center p-4 hover:bg-gray-50 cursor-pointer ${
-                    selectedFiles.some(f => f.id === file.id) ? 'bg-blue-50' : ''
+                  className={`${styles.fileItem} ${
+                    selectedFiles.some(f => f.id === file.id) ? styles.selected : ''
                   }`}
                   onClick={() => handleFileSelect(file)}
                 >
-                  <div className="flex items-center flex-1 min-w-0">
+                  <div className={styles.fileItemContent}>
                     {getFileIcon(file)}
-                    <div className="ml-3 flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                    <div className={styles.fileItemInfo}>
+                      <p className={styles.fileItemName}>
                         {file.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className={styles.fileItemMeta}>
                         {file.size && formatBytes(parseInt(file.size))} • {formatDate(file.modifiedTime)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className={styles.fileActions}>
                     {file.mimeType === 'application/vnd.google-apps.folder' ? (
                       <>
                         <Button
@@ -382,7 +389,7 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
                             handleImportFolder(file);
                           }}
                         >
-                          <Download className="h-4 w-4 mr-1" />
+                          <Download className={styles.createIcon} />
                           Import
                         </Button>
                       </>
@@ -396,7 +403,7 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
                             handleImportFile(file);
                           }}
                         >
-                          <Upload className="h-4 w-4 mr-1" />
+                          <Upload className={styles.createIcon} />
                           Import
                         </Button>
                         <Button
@@ -407,7 +414,7 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
                             handleDownloadFile(file);
                           }}
                         >
-                          <Download className="h-4 w-4" />
+                          <Download className={styles.createIcon} />
                         </Button>
                       </>
                     )}
@@ -419,7 +426,7 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
                           size="sm"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <MoreHorizontal className="h-4 w-4" />
+                          <MoreHorizontal className={styles.createIcon} />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -428,9 +435,9 @@ const DriveFileBrowser = ({ workspaceId, onFileImport }) => {
                             e.stopPropagation();
                             handleDeleteFile(file);
                           }}
-                          className="text-red-600"
+                          className={styles.errorText}
                         >
-                          <Trash2 className="h-4 w-4 mr-2" />
+                          <Trash2 className={styles.createIcon} />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>

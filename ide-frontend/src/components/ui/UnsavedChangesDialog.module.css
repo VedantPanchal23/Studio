@@ -1,0 +1,118 @@
+/* Unsaved Changes Dialog Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.dialog {
+  background-color: #1e293b; /* slate-800 */
+  border: 1px solid #475569; /* slate-700 */
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  max-width: 28rem; /* max-w-md */
+  width: 100%;
+  margin: 0 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.warningIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #fb923c; /* orange-400 */
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #e2e8f0; /* slate-200 */
+  margin: 0;
+}
+
+.content {
+  color: #cbd5e1; /* slate-300 */
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.fileName {
+  font-weight: 600;
+}
+
+.subText {
+  font-size: 0.875rem;
+  color: #94a3b8; /* slate-400 */
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.cancelButton {
+  background-color: transparent;
+  color: #cbd5e1; /* slate-300 */
+}
+
+.cancelButton:hover {
+  color: #f1f5f9; /* slate-100 */
+  background-color: #475569; /* slate-700 */
+}
+
+.discardButton {
+  background-color: #dc2626; /* red-600 */
+  color: white;
+}
+
+.discardButton:hover {
+  background-color: #b91c1c; /* red-700 */
+}
+
+.saveButton {
+  background-color: #2563eb; /* blue-600 */
+  color: white;
+}
+
+.saveButton:hover {
+  background-color: #1d4ed8; /* blue-700 */
+}
+
+.buttonIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Focus styles for accessibility */
+.button:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import CollaborativeEditor from '../components/CollaborativeEditor'
 import CollaborativeTextArea from '../components/CollaborativeTextArea'
+import styles from './CollaborationDemo.module.css'
 
 /**
  * Demo page for testing collaboration features
@@ -25,72 +26,72 @@ const CollaborationDemo = () => {
 
   if (!userInfo) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className={styles.loading}>
+        <div className={styles.loadingText}>Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+    <div className={styles.container}>
+      <div className={styles.maxWidth}>
+        <h1 className={styles.title}>
           Collaboration Demo
         </h1>
 
         {/* User Info */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-2">Current User</h2>
-          <div className="flex items-center gap-3">
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Current User</h2>
+          <div className={styles.userInfoContainer}>
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium"
+              className={styles.userAvatar}
               style={{ backgroundColor: '#007ACC' }}
             >
               {userInfo.name.charAt(0)}
             </div>
             <div>
-              <div className="font-medium">{userInfo.name}</div>
-              <div className="text-sm text-gray-500">{userInfo.email}</div>
-              <div className="text-xs text-gray-400">ID: {userInfo.id}</div>
+              <div className={styles.userName}>{userInfo.name}</div>
+              <div className={styles.userEmail}>{userInfo.email}</div>
+              <div className={styles.userId}>ID: {userInfo.id}</div>
             </div>
           </div>
         </div>
 
         {/* Configuration */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Configuration</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className={styles.card}>
+          <h2 className={styles.cardTitle}>Configuration</h2>
+          <div className={`${styles.grid} ${styles.gridMd2}`}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
                 Workspace ID
               </label>
               <input
                 type="text"
                 value={workspaceId}
                 onChange={(e) => setWorkspaceId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={styles.input}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
                 File Path
               </label>
               <input
                 type="text"
                 value={filePath}
                 onChange={(e) => setFilePath(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={styles.input}
               />
             </div>
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">
+        <div className={styles.infoCard}>
+          <h3 className={styles.infoTitle}>
             How to Test Collaboration
           </h3>
-          <ol className="list-decimal list-inside text-blue-800 space-y-1">
+          <ol className={styles.infoList}>
             <li>Open this page in multiple browser tabs or windows</li>
             <li>Use the same Workspace ID and File Path in all tabs</li>
             <li>Start typing in either editor - changes should sync in real-time</li>
@@ -101,14 +102,14 @@ const CollaborationDemo = () => {
         </div>
 
         {/* Monaco Editor Demo */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold">Monaco Editor (Collaborative)</h2>
-            <p className="text-sm text-gray-600">
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Monaco Editor (Collaborative)</h2>
+            <p className={styles.sectionDescription}>
               Full-featured code editor with syntax highlighting and IntelliSense
             </p>
           </div>
-          <div className="p-4">
+          <div className={styles.sectionContent}>
             <CollaborativeEditor
               workspaceId={workspaceId}
               filePath={filePath}
@@ -116,7 +117,7 @@ const CollaborationDemo = () => {
               theme="vs-dark"
               userInfo={userInfo}
               onContentChange={setEditorContent}
-              className="h-96 border border-gray-300 rounded"
+              className={styles.editorContainer}
               options={{
                 minimap: { enabled: true },
                 fontSize: 14,
@@ -124,7 +125,7 @@ const CollaborationDemo = () => {
               }}
             />
             {editorContent && (
-              <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
+              <div className={styles.contentInfo}>
                 <strong>Content length:</strong> {editorContent.length} characters
               </div>
             )}
@@ -132,14 +133,14 @@ const CollaborationDemo = () => {
         </div>
 
         {/* TextArea Demo */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold">Collaborative TextArea</h2>
-            <p className="text-sm text-gray-600">
+        <div className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Collaborative TextArea</h2>
+            <p className={styles.sectionDescription}>
               Simple textarea with real-time collaboration
             </p>
           </div>
-          <div className="p-4">
+          <div className={styles.sectionContent}>
             <CollaborativeTextArea
               workspaceId={workspaceId}
               filePath={`${filePath}.txt`}
@@ -147,10 +148,10 @@ const CollaborationDemo = () => {
               placeholder="Start typing in this collaborative textarea..."
               rows={8}
               onContentChange={setTextAreaContent}
-              className="w-full"
+              className={styles.textareaFull}
             />
             {textAreaContent && (
-              <div className="mt-4 p-3 bg-gray-100 rounded text-sm">
+              <div className={styles.contentInfo}>
                 <strong>Content length:</strong> {textAreaContent.length} characters
               </div>
             )}
@@ -158,16 +159,16 @@ const CollaborationDemo = () => {
         </div>
 
         {/* Debug Info */}
-        <div className="mt-6 bg-gray-100 rounded-lg p-4">
-          <h3 className="text-lg font-semibold mb-2">Debug Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div className={styles.debugCard}>
+          <h3 className={styles.debugTitle}>Debug Information</h3>
+          <div className={styles.debugGrid}>
             <div>
               <strong>Document ID (Editor):</strong><br />
-              <code className="bg-white px-2 py-1 rounded">{workspaceId}:{filePath}</code>
+              <code className={styles.debugCode}>{workspaceId}:{filePath}</code>
             </div>
             <div>
               <strong>Document ID (TextArea):</strong><br />
-              <code className="bg-white px-2 py-1 rounded">{workspaceId}:{filePath}.txt</code>
+              <code className={styles.debugCode}>{workspaceId}:{filePath}.txt</code>
             </div>
           </div>
         </div>

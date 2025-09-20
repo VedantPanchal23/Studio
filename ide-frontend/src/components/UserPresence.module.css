@@ -1,0 +1,83 @@
+/* UserPresence.module.css */
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.avatarList {
+  display: flex;
+  margin-left: -0.5rem;
+}
+
+.avatarList > * + * {
+  margin-left: -0.5rem;
+}
+
+.userAvatar {
+  position: relative;
+}
+
+.avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatarFallback {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: white;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #111827;
+  color: white;
+  font-size: var(--font-size-xs);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  opacity: 0;
+  transition: opacity 200ms;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 50;
+}
+
+.userAvatar:hover .tooltip {
+  opacity: 1;
+}
+
+.tooltipEmail {
+  color: #d1d5db;
+  font-size: var(--font-size-xs);
+}
+
+.tooltipArrow {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #111827;
+}
+
+.counter {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  margin-left: var(--spacing-xs);
+}

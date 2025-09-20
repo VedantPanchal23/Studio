@@ -4,7 +4,7 @@
 export { default as App } from './App/App';
 export { IDELayout } from './IDELayout/IDELayout';
 export { Header } from './Header/Header';
-export { FileExplorer } from './FileExplorer/FileExplorer';
+export { default as FileExplorer } from './FileExplorer/FileExplorer';
 export { EditorPanel } from './EditorPanel/EditorPanel';
 export { Terminal } from './Terminal/Terminal';
 export { default as CodeExecution } from './CodeExecution';
@@ -13,7 +13,7 @@ export { default as CodeExecution } from './CodeExecution';
 export * from './Git';
 
 // UI Components
-export { Button } from './ui/Button';
-export { Input } from './ui/Input';
+export { Button } from './ui/button';
+export { Input } from './ui/input';
 export { Modal, ModalFooter } from './ui/Modal';
 export { ContextMenu, ContextMenuItem, ContextMenuSeparator } from './ui/ContextMenu';

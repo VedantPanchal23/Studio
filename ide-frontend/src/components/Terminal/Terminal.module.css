@@ -1,0 +1,154 @@
+/* Terminal.module.css */
+
+.terminal {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #0f172a;
+}
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+  min-height: 32px;
+  padding: 0 var(--spacing-sm);
+}
+
+.tabList {
+  display: flex;
+  align-items: center;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: transparent;
+  border: none;
+  color: #64748b;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-normal);
+}
+
+.tab:hover {
+  background-color: #334155;
+}
+
+.tabActive {
+  background-color: #475569;
+  color: #f8fafc;
+}
+
+.tabIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.125rem;
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-normal);
+}
+
+.closeButton:hover {
+  background-color: #475569;
+}
+
+.closeIcon {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.actionButton {
+  padding: var(--spacing-xs);
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+.actionButton:hover {
+  background-color: #334155;
+  color: #e2e8f0;
+}
+
+.actionIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.settings {
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+  padding: var(--spacing-md);
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+  font-size: var(--font-size-xs);
+}
+
+.settingsGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.settingsLabel {
+  display: block;
+  color: #cbd5e1;
+  margin-bottom: var(--spacing-xs);
+}
+
+.settingsInput,
+.settingsSelect {
+  width: 100%;
+  background-color: #334155;
+  color: #f1f5f9;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.emptyMessage {
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.emptyIcon {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto 0.5rem;
+}

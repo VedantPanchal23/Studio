@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileExplorer } from '../FileExplorer/FileExplorer';
+import FileExplorer from '../FileExplorer/FileExplorer';
 import { Search, SourceControl, RunDebug, Extensions } from './panels';
 import './Sidebar.css';
 

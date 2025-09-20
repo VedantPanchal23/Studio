@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import useExecutionStore from '../../stores/executionStore';
 import useEditorStore from '../../store/editorStore';
 import useWorkspaceStore from '../../stores/workspaceStore';
+import styles from './CodeExecution.module.css';
 
 /**
  * Code execution component with language selection and output display
@@ -118,8 +119,8 @@ const CodeExecution = () => {
   const getExecutionStatus = () => {
     if (isExecuting) {
       return (
-        <Badge variant="secondary" className="flex items-center gap-1">
-          <Loader2 className="h-3 w-3 animate-spin" />
+        <Badge variant="secondary" className={styles.statusBadge}>
+          <Loader2 className={styles.spinIcon} />
           Running
         </Badge>
       );
@@ -127,8 +128,8 @@ const CodeExecution = () => {
 
     if (activeExecution) {
       return (
-        <Badge variant="outline" className="flex items-center gap-1">
-          <Terminal className="h-3 w-3" />
+        <Badge variant="outline" className={styles.statusBadge}>
+          <Terminal className={styles.statusIcon} />
           {activeExecution.status}
         </Badge>
       );
@@ -143,37 +144,37 @@ const CodeExecution = () => {
   const getContainerStatus = () => {
     if (currentContainer) {
       return (
-        <Badge variant="default" className="flex items-center gap-1">
-          <div className="h-2 w-2 bg-green-500 rounded-full" />
+        <Badge variant="default" className={styles.statusBadge}>
+          <div className={`${styles.containerStatusIcon} ${styles.containerReady}`} />
           {languageInfo?.name} Ready
         </Badge>
       );
     }
 
     return (
-      <Badge variant="outline" className="flex items-center gap-1">
-        <div className="h-2 w-2 bg-gray-400 rounded-full" />
+      <Badge variant="outline" className={styles.statusBadge}>
+        <div className={`${styles.containerStatusIcon} ${styles.containerNotReady}`} />
         No Container
       </Badge>
     );
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">Code Execution</CardTitle>
-          <div className="flex items-center gap-2">
+    <Card className={styles.container}>
+      <CardHeader className={styles.header}>
+        <div className={styles.headerTop}>
+          <CardTitle className={styles.title}>Code Execution</CardTitle>
+          <div className={styles.statusContainer}>
             {getExecutionStatus()}
             {getContainerStatus()}
           </div>
         </div>
         
         {/* Controls */}
-        <div className="flex items-center gap-2">
+        <div className={styles.controls}>
           {/* Language Selection */}
           <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className={styles.languageSelect}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -186,18 +187,18 @@ const CodeExecution = () => {
           </Select>
 
           {/* Execution Controls */}
-          <div className="flex items-center gap-1">
+          <div className={styles.executionControls}>
             {!isExecuting ? (
               <Button
                 size="sm"
                 onClick={handleExecute}
                 disabled={!activeFile || isCreatingContainer}
-                className="flex items-center gap-1"
+                className={styles.runButton}
               >
                 {isCreatingContainer ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className={styles.spinIcon} />
                 ) : (
-                  <Play className="h-3 w-3" />
+                  <Play className={styles.statusIcon} />
                 )}
                 Run
               </Button>
@@ -206,9 +207,9 @@ const CodeExecution = () => {
                 size="sm"
                 variant="destructive"
                 onClick={handleStop}
-                className="flex items-center gap-1"
+                className={styles.stopButton}
               >
-                <Square className="h-3 w-3" />
+                <Square className={styles.statusIcon} />
                 Stop
               </Button>
             )}
@@ -218,6 +219,7 @@ const CodeExecution = () => {
               variant="outline"
               onClick={handleClearOutput}
               disabled={isExecuting}
+              className={styles.clearButton}
             >
               Clear
             </Button>
@@ -238,16 +240,16 @@ const CodeExecution = () => {
         )}
       </CardHeader>
 
-      <CardContent className="flex-1 p-0">
+      <CardContent className={styles.content}>
         {/* Output Display */}
-        <div className="h-full bg-gray-900 text-gray-100 font-mono text-sm overflow-auto">
-          <div className="p-3">
+        <div className={styles.outputContainer}>
+          <div className={styles.outputContent}>
             {executionOutput ? (
-              <pre className="whitespace-pre-wrap break-words">
+              <pre className={styles.outputText}>
                 {executionOutput}
               </pre>
             ) : (
-              <div className="text-gray-500 italic">
+              <div className={styles.noOutput}>
                 {isExecuting ? 'Executing...' : 'No output yet. Run some code to see results.'}
               </div>
             )}

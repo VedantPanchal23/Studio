@@ -1,0 +1,130 @@
+/* CodeExecution.module.css */
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding-bottom: var(--spacing-md);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.statusContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.languageSelect {
+  width: 8rem;
+}
+
+.executionControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.runButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.stopButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.statusIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.spinIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+  animation: spin 1s linear infinite;
+}
+
+.containerStatusIcon {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 50%;
+}
+
+.containerReady {
+  background-color: #22c55e;
+}
+
+.containerNotReady {
+  background-color: #9ca3af;
+}
+
+.content {
+  flex: 1;
+  padding: 0;
+}
+
+.outputContainer {
+  height: 100%;
+  background-color: #111827;
+  color: #f3f4f6;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  overflow: auto;
+}
+
+.outputContent {
+  padding: var(--spacing-md);
+}
+
+.outputText {
+  white-space: pre-wrap;
+  word-break: break-words;
+}
+
+.noOutput {
+  color: #6b7280;
+  font-style: italic;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

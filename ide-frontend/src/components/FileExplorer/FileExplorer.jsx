@@ -21,8 +21,9 @@ import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/Contex
 import { FileTreeItem } from './FileTreeItem'
 import { CreateItemModal } from './CreateItemModal'
 import { RenameModal } from './RenameModal'
+import styles from './FileExplorer.module.css'
 
-export function FileExplorer({ onFileOpen, workspaceId }) {
+function FileExplorer({ onFileOpen, workspaceId }) {
   // Workspace store
   const { currentWorkspaceId } = useWorkspaceStore()
   
@@ -73,11 +74,17 @@ export function FileExplorer({ onFileOpen, workspaceId }) {
   const fileInputRef = useRef(null)
   const searchInputRef = useRef(null)
 
-  // Set workspace and load files when workspace changes
+  // Set workspace and load files when workspace changes (with debounce to prevent rate limiting)
   useEffect(() => {
     if (activeWorkspaceId) {
       setCurrentWorkspace(activeWorkspaceId)
-      loadFiles()
+      
+      // Debounce the loadFiles call to prevent rapid API requests
+      const timer = setTimeout(() => {
+        loadFiles()
+      }, 300)
+      
+      return () => clearTimeout(timer)
     }
   }, [activeWorkspaceId, setCurrentWorkspace, loadFiles])
 
@@ -217,47 +224,47 @@ export function FileExplorer({ onFileOpen, workspaceId }) {
   const fileTree = buildFileTree(getFilteredFiles())
 
   return (
-    <div className="h-full bg-slate-800 flex flex-col">
+    <div className={styles.container}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-slate-700">
-        <h2 className="text-sm font-medium text-slate-200">Explorer</h2>
-        <div className="flex items-center space-x-1">
+      <div className={styles.header}>
+        <h2 className={styles.title}>Explorer</h2>
+        <div className={styles.headerActions}>
           <button 
-            className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"
+            className={styles.actionButton}
             title="New File"
             onClick={handleCreateFile}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className={styles.actionIcon} />
           </button>
           <button 
-            className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"
+            className={styles.actionButton}
             title="New Folder"
             onClick={handleCreateFolder}
           >
-            <FolderPlus className="w-4 h-4" />
+            <FolderPlus className={styles.actionIcon} />
           </button>
           <button 
-            className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"
+            className={styles.actionButton}
             title="Upload Files"
             onClick={handleFileUpload}
           >
-            <Upload className="w-4 h-4" />
+            <Upload className={styles.actionIcon} />
           </button>
           <button 
-            className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200"
+            className={styles.actionButton}
             title="Refresh"
             onClick={refreshFiles}
             disabled={loading}
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`${styles.actionIcon} ${loading ? styles.loadingIcon : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Search and filters */}
-      <div className="p-2 border-b border-slate-700 space-y-2">
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <div className={styles.searchSection}>
+        <div className={styles.searchContainer}>
+          <Search className={styles.searchIcon} />
           <input
             ref={searchInputRef}
             type="text"
@@ -265,62 +272,62 @@ export function FileExplorer({ onFileOpen, workspaceId }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            className="w-full pl-8 pr-3 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className={styles.searchInput}
           />
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
+        <div className={styles.controls}>
+          <div className={styles.sortControls}>
             <button
               onClick={() => handleSort('name')}
-              className={`px-2 py-1 text-xs rounded ${sortBy === 'name' ? 'bg-slate-600 text-slate-200' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`${styles.sortButton} ${sortBy === 'name' ? styles.sortButtonActive : ''}`}
               title="Sort by name"
             >
-              Name {sortBy === 'name' && (sortOrder === 'asc' ? <SortAsc className="inline w-3 h-3" /> : <SortDesc className="inline w-3 h-3" />)}
+              Name {sortBy === 'name' && (sortOrder === 'asc' ? <SortAsc className={styles.sortIcon} /> : <SortDesc className={styles.sortIcon} />)}
             </button>
             <button
               onClick={() => handleSort('modified')}
-              className={`px-2 py-1 text-xs rounded ${sortBy === 'modified' ? 'bg-slate-600 text-slate-200' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`${styles.sortButton} ${sortBy === 'modified' ? styles.sortButtonActive : ''}`}
               title="Sort by modified date"
             >
-              Modified {sortBy === 'modified' && (sortOrder === 'asc' ? <SortAsc className="inline w-3 h-3" /> : <SortDesc className="inline w-3 h-3" />)}
+              Modified {sortBy === 'modified' && (sortOrder === 'asc' ? <SortAsc className={styles.sortIcon} /> : <SortDesc className={styles.sortIcon} />)}
             </button>
           </div>
           
           <button
             onClick={toggleHiddenFiles}
-            className={`p-1 rounded ${showHiddenFiles ? 'text-slate-200' : 'text-slate-400'} hover:text-slate-200`}
+            className={`${styles.toggleButton} ${showHiddenFiles ? styles.toggleButtonActive : ''}`}
             title={showHiddenFiles ? 'Hide hidden files' : 'Show hidden files'}
           >
-            {showHiddenFiles ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            {showHiddenFiles ? <Eye className={styles.toggleIcon} /> : <EyeOff className={styles.toggleIcon} />}
           </button>
         </div>
       </div>
 
       {/* Error display */}
       {error && (
-        <div className="p-2 bg-red-900/20 border-b border-red-800 text-red-400 text-sm flex items-center justify-between">
+        <div className={styles.errorBanner}>
           <span>{error}</span>
-          <button onClick={clearError} className="text-red-300 hover:text-red-200">
+          <button onClick={clearError} className={styles.errorClose}>
             ×
           </button>
         </div>
       )}
 
       {/* File tree */}
-      <div className="flex-1 overflow-y-auto">
+      <div className={styles.fileList}>
         {loading && files.length === 0 ? (
-          <div className="p-4 text-center text-slate-400">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+          <div className={styles.loadingState}>
+            <RefreshCw className={styles.loadingIcon} />
             Loading files...
           </div>
         ) : files.length === 0 ? (
-          <div className="p-4 text-center text-slate-400">
-            <Folder className="w-8 h-8 mx-auto mb-2" />
+          <div className={styles.emptyState}>
+            <Folder className={styles.emptyIcon} />
             <p>No files in workspace</p>
             <button 
               onClick={handleCreateFile}
-              className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
+              className={styles.emptyLink}
             >
               Create your first file
             </button>
@@ -362,10 +369,10 @@ export function FileExplorer({ onFileOpen, workspaceId }) {
       >
         {contextMenu.item && (
           <>
-            <ContextMenuItem onClick={handleCreateFile} icon={<Plus className="w-4 h-4" />}>
+            <ContextMenuItem onClick={handleCreateFile} icon={<Plus className={styles.contextMenuIcon} />}>
               New File
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleCreateFolder} icon={<FolderPlus className="w-4 h-4" />}>
+            <ContextMenuItem onClick={handleCreateFolder} icon={<FolderPlus className={styles.contextMenuIcon} />}>
               New Folder
             </ContextMenuItem>
             <ContextMenuSeparator />
@@ -376,7 +383,7 @@ export function FileExplorer({ onFileOpen, workspaceId }) {
               Copy
             </ContextMenuItem>
             <ContextMenuSeparator />
-            <ContextMenuItem onClick={() => handleDelete(contextMenu.item)} className="text-red-400">
+            <ContextMenuItem onClick={() => handleDelete(contextMenu.item)} className={styles.contextMenuDanger}>
               Delete
             </ContextMenuItem>
           </>
@@ -402,3 +409,6 @@ export function FileExplorer({ onFileOpen, workspaceId }) {
     </div>
   )
 }
+
+// Default export
+export default FileExplorer;

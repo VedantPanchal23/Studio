@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, Save, X } from 'lucide-react'
+import styles from './UnsavedChangesDialog.module.css'
 
 export function UnsavedChangesDialog({ 
   isOpen, 
@@ -18,40 +19,40 @@ export function UnsavedChangesDialog({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 max-w-md w-full mx-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <AlertTriangle className="w-6 h-6 text-orange-400" />
-          <h3 className="text-lg font-medium text-slate-200">Unsaved Changes</h3>
+    <div className={styles.overlay}>
+      <div className={styles.dialog}>
+        <div className={styles.header}>
+          <AlertTriangle className={styles.warningIcon} />
+          <h3 className={styles.title}>Unsaved Changes</h3>
         </div>
         
-        <p className="text-slate-300 mb-6">
-          Do you want to save the changes you made to <strong>{fileName}</strong>?
+        <p className={styles.content}>
+          Do you want to save the changes you made to <strong className={styles.fileName}>{fileName}</strong>?
           <br />
-          <span className="text-sm text-slate-400 mt-2 block">
+          <span className={styles.subText}>
             Your changes will be lost if you don't save them before {actionText[action]}.
           </span>
         </p>
         
-        <div className="flex justify-end space-x-3">
+        <div className={styles.actions}>
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-slate-300 hover:text-slate-100 hover:bg-slate-700 rounded transition-colors"
+            className={`${styles.button} ${styles.cancelButton}`}
           >
             Cancel
           </button>
           <button
             onClick={onDiscard}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center space-x-2"
+            className={`${styles.button} ${styles.discardButton}`}
           >
-            <X className="w-4 h-4" />
+            <X className={styles.buttonIcon} />
             <span>Don't Save</span>
           </button>
           <button
             onClick={onSave}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors flex items-center space-x-2"
+            className={`${styles.button} ${styles.saveButton}`}
           >
-            <Save className="w-4 h-4" />
+            <Save className={styles.buttonIcon} />
             <span>Save</span>
           </button>
         </div>

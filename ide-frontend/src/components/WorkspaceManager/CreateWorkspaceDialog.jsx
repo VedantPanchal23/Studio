@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import styles from './CreateWorkspaceDialog.module.css';
 
 const RUNTIME_OPTIONS = [
   { value: 'node', label: 'Node.js', description: 'JavaScript runtime' },
@@ -132,10 +133,10 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={styles.dialogContent}>
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <FolderPlus className="h-5 w-5" />
+          <DialogTitle className={styles.dialogTitle}>
+            <FolderPlus className={styles.titleIcon} />
             <span>Create New Workspace</span>
           </DialogTitle>
           <DialogDescription>
@@ -143,14 +144,14 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className={styles.form}>
           {errors.general && (
-            <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
+            <div className={styles.errorAlert}>
               {errors.general}
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className={styles.fieldGroup}>
             <Label htmlFor="name">Workspace Name *</Label>
             <Input
               id="name"
@@ -160,11 +161,11 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
               className={errors.name ? 'border-destructive' : ''}
             />
             {errors.name && (
-              <p className="text-sm text-destructive">{errors.name}</p>
+              <p className={styles.fieldError}>{errors.name}</p>
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className={styles.fieldGroup}>
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
@@ -175,12 +176,12 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
               rows={3}
             />
             {errors.description && (
-              <p className="text-sm text-destructive">{errors.description}</p>
+              <p className={styles.fieldError}>{errors.description}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className={styles.fieldGrid}>
+            <div className={styles.fieldGroup}>
               <Label htmlFor="runtime">Runtime</Label>
               <Select
                 value={formData.runtime}
@@ -192,9 +193,9 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
                 <SelectContent>
                   {RUNTIME_OPTIONS.map((runtime) => (
                     <SelectItem key={runtime.value} value={runtime.value}>
-                      <div className="flex flex-col">
+                      <div className={styles.runtimeOption}>
                         <span>{runtime.label}</span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className={styles.runtimeDescription}>
                           {runtime.description}
                         </span>
                       </div>
@@ -204,7 +205,7 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className={styles.fieldGroup}>
               <Label htmlFor="version">Version</Label>
               <Input
                 id="version"
@@ -215,23 +216,23 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className={styles.checkboxGroup}>
             <Checkbox
               id="isPublic"
               checked={formData.isPublic}
               onCheckedChange={(checked) => handleInputChange('isPublic', checked)}
             />
-            <Label htmlFor="isPublic" className="text-sm">
+            <Label htmlFor="isPublic" className={styles.checkboxLabel}>
               Make this workspace public
             </Label>
           </div>
           {formData.isPublic && (
-            <p className="text-xs text-muted-foreground ml-6">
+            <p className={styles.checkboxDescription}>
               Public workspaces can be viewed by anyone, but only collaborators can edit.
             </p>
           )}
 
-          <DialogFooter>
+          <DialogFooter className={styles.dialogFooter}>
             <Button
               type="button"
               variant="outline"
@@ -240,14 +241,17 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className={styles.submitButton}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className={styles.loadingIcon} />
                   Creating...
                 </>
               ) : (
-                'Create Workspace'
+                <>
+                  <FolderPlus className={styles.createIcon} />
+                  Create Workspace
+                </>
               )}
             </Button>
           </DialogFooter>

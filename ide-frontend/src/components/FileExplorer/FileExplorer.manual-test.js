@@ -153,7 +153,7 @@ export const validateFileExplorer = {
 
 // Usage example:
 /*
-import { FileExplorer } from './FileExplorer';
+import FileExplorer from './FileExplorer';
 import { mockFileData, testScenarios, validateFileExplorer } from './FileExplorer.manual-test';
 
 // In your test component or development environment:

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ChevronDown, User, Settings, LogOut } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore'
 import { WorkspaceSelector } from '../WorkspaceManager'
+import styles from './Header.module.css'
 
 export function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -18,14 +19,14 @@ export function Header() {
   }
 
   return (
-    <header className="h-12 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-4">
+    <header className={styles.header}>
       {/* Left side - Logo and Workspace */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
-            <span className="text-white text-sm font-bold">IDE</span>
+      <div className={styles.leftSection}>
+        <div className={styles.brand}>
+          <div className={styles.logo}>
+            <span className={styles.logoText}>IDE</span>
           </div>
-          <span className="text-slate-200 font-medium">Browser IDE</span>
+          <span className={styles.brandName}>Browser IDE</span>
         </div>
         
         {/* Workspace Selector */}
@@ -33,28 +34,28 @@ export function Header() {
       </div>
 
       {/* Right side - User Menu */}
-      <div className="relative">
+      <div className={styles.userMenu}>
         <button
           onClick={() => setUserMenuOpen(!userMenuOpen)}
-          className="flex items-center space-x-2 px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 transition-colors"
+          className={styles.userButton}
         >
-          <User className="w-4 h-4 text-slate-400" />
-          <span className="text-sm text-slate-200">{user?.name || 'User'}</span>
-          <ChevronDown className="w-4 h-4 text-slate-400" />
+          <User className={styles.userIcon} />
+          <span className={styles.userName}>{user?.name || 'User'}</span>
+          <ChevronDown className={styles.chevronIcon} />
         </button>
         
         {userMenuOpen && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-slate-800 border border-slate-600 rounded shadow-lg z-50">
-            <div className="py-1">
-              <button className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center space-x-2">
-                <Settings className="w-4 h-4" />
+          <div className={styles.dropdown}>
+            <div className={styles.dropdownContent}>
+              <button className={styles.menuItem}>
+                <Settings className={styles.menuIcon} />
                 <span>Settings</span>
               </button>
               <button 
                 onClick={handleLogout}
-                className="w-full text-left px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center space-x-2"
+                className={styles.menuItem}
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className={styles.menuIcon} />
                 <span>Logout</span>
               </button>
             </div>

@@ -1,0 +1,494 @@
+/* WorkspaceSettingsDialog.module.css */
+
+.dialogContent {
+  max-width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.dialogTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.titleIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.errorAlert {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+}
+
+.tabs {
+  width: 100%;
+}
+
+.tabsList {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.tabIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: var(--spacing-xs);
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.inputError {
+  border-color: var(--color-danger);
+}
+
+.errorText {
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.checkboxLabel {
+  font-size: var(--font-size-sm);
+}
+
+.actionContainer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.saveIcon {
+  margin-right: var(--spacing-sm);
+  height: 1rem;
+  width: 1rem;
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+}
+
+.collaboratorSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-lg);
+}
+
+.collaboratorForm {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.collaboratorInput {
+  flex: 1;
+}
+
+.roleSelect {
+  width: 8rem;
+}
+
+.inviteButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.inviteIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: var(--spacing-xs);
+}
+
+.collaboratorsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.collaboratorItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-lg);
+}
+
+.collaboratorInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.collaboratorIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.ownerIcon {
+  color: #eab308;
+}
+
+.collaboratorDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.collaboratorEmail {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkboxLabel {
+  font-size: 0.875rem;
+}
+
+.saveButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveIcon {
+  margin-right: 0.5rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.spinIcon {
+  margin-right: 0.5rem;
+  height: 1rem;
+  width: 1rem;
+  animation: spin 1s linear infinite;
+}
+
+.collaboratorsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.addCollaboratorPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.addCollaboratorTitle {
+  font-weight: 500;
+  margin: 0;
+}
+
+.addCollaboratorForm {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.emailInputField {
+  flex: 1;
+}
+
+.roleSelectField {
+  width: 8rem;
+}
+
+.addIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.25rem;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  color: var(--color-destructive);
+  margin-top: 0.25rem;
+}
+
+.collaboratorsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.collaboratorsTitle {
+  font-weight: 500;
+  margin: 0;
+}
+
+.ownerItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.ownerInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.crownIcon {
+  height: 1rem;
+  width: 1rem;
+  color: #eab308;
+}
+
+.userDetails h5 {
+  margin: 0;
+  font-weight: 500;
+}
+
+.userEmail {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.ownerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.collaboratorItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.collaboratorInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.roleIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.roleSelect {
+  width: 6rem;
+}
+
+.removeButton {
+  color: var(--color-destructive);
+}
+
+.removeIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.collaboratorBadge {
+  font-size: 0.875rem;
+  background-color: var(--color-background-secondary);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius);
+}
+
+.emptyMessage {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.actionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.actionPanel {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.duplicateTitle {
+  font-weight: 500;
+  color: #9a3412;
+  margin-bottom: 0.5rem;
+}
+
+.duplicateDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.duplicateIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}
+
+.archivePanel {
+  border-color: #fef08a;
+}
+
+.archiveTitle {
+  font-weight: 500;
+  color: #a16207;
+  margin-bottom: 0.5rem;
+}
+
+.archiveDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.archiveButton {
+  color: #a16207;
+  border-color: #fcd34d;
+}
+
+.archiveIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}
+
+.deletePanel {
+  border-color: #fecaca;
+}
+
+.deleteTitle {
+  font-weight: 500;
+  color: #dc2626;
+  margin-bottom: 0.5rem;
+}
+
+.deleteDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.deleteButton {
+  background-color: #dc2626;
+}
+
+.deleteButton:hover {
+  background-color: #b91c1c;
+}
+
+.deleteIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}
+
+.collaboratorActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.roleSelectTrigger {
+  width: 6rem;
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.removeIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.ownerBadge {
+  font-size: var(--font-size-sm);
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+.roleBadge {
+  font-size: var(--font-size-sm);
+  background-color: var(--bg-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+}
+
+.noCollaborators {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--spacing-lg) 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 640px) {
+  .dialogContent {
+    max-width: 700px;
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './UserPresence.module.css'
 
 /**
  * Component to display user presence indicators
@@ -17,9 +18,9 @@ const UserPresence = ({ users, currentUserId, maxVisible = 5 }) => {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={styles.container}>
       {/* User avatars */}
-      <div className="flex -space-x-2">
+      <div className={styles.avatarList}>
         {visibleUsers.map((userState) => {
           const user = userState.user
           const color = user.color || '#007ACC'
@@ -27,19 +28,19 @@ const UserPresence = ({ users, currentUserId, maxVisible = 5 }) => {
           return (
             <div
               key={user.id}
-              className="relative group"
+              className={styles.userAvatar}
               title={`${user.name} (${user.email})`}
             >
               {user.avatar ? (
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                  className={styles.avatar}
                   style={{ borderColor: color }}
                 />
               ) : (
                 <div
-                  className="w-6 h-6 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-xs font-medium text-white"
+                  className={styles.avatarFallback}
                   style={{ 
                     backgroundColor: color,
                     borderColor: color 
@@ -50,10 +51,10 @@ const UserPresence = ({ users, currentUserId, maxVisible = 5 }) => {
               )}
               
               {/* Tooltip */}
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              <div className={styles.tooltip}>
                 {user.name}
-                <div className="text-gray-300 text-xs">{user.email}</div>
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                <div className={styles.tooltipEmail}>{user.email}</div>
+                <div className={styles.tooltipArrow}></div>
               </div>
             </div>
           )
@@ -62,7 +63,7 @@ const UserPresence = ({ users, currentUserId, maxVisible = 5 }) => {
         {/* Show count of hidden users */}
         {hiddenCount > 0 && (
           <div
-            className="w-6 h-6 rounded-full bg-gray-500 border-2 border-white shadow-sm flex items-center justify-center text-xs font-medium text-white"
+            className={styles.moreCounter}
             title={`${hiddenCount} more user${hiddenCount > 1 ? 's' : ''}`}
           >
             +{hiddenCount}
@@ -71,7 +72,7 @@ const UserPresence = ({ users, currentUserId, maxVisible = 5 }) => {
       </div>
       
       {/* User count text */}
-      <span className="text-xs text-gray-500 ml-1">
+      <span className={styles.userCount}>
         {activeUsers.length} user{activeUsers.length !== 1 ? 's' : ''} online
       </span>
     </div>

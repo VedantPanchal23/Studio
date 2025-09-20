@@ -24,9 +24,9 @@ class WebSocketService {
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: this.reconnectDelay,
-      auth: {
-        // Add authentication token if available
-        token: localStorage.getItem('authToken')
+      auth: import.meta.env.VITE_DISABLE_AUTH === 'true' ? {} : {
+        // Add authentication token if available and auth is enabled
+        token: localStorage.getItem('token')
       }
     })
 

@@ -32,6 +32,7 @@ import {
 } from '../ui/select';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog';
+import styles from './WorkspaceDashboard.module.css';
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('en-US', {
@@ -52,13 +53,13 @@ const formatFileSize = (bytes) => {
 const getRoleIcon = (role) => {
   switch (role) {
     case 'owner':
-      return <Crown className="h-4 w-4 text-yellow-500" />;
+      return <Crown className={`${styles.roleIcon} ${styles.crownIcon}`} />;
     case 'editor':
-      return <Edit className="h-4 w-4 text-blue-500" />;
+      return <Edit className={`${styles.roleIcon} ${styles.editIcon}`} />;
     case 'viewer':
-      return <Eye className="h-4 w-4 text-gray-500" />;
+      return <Eye className={`${styles.roleIcon} ${styles.viewIcon}`} />;
     default:
-      return <Users className="h-4 w-4 text-gray-500" />;
+      return <Users className={`${styles.roleIcon} ${styles.usersIcon}`} />;
   }
 };
 
@@ -67,20 +68,20 @@ const WorkspaceCard = ({ workspace, onSelect, onSettings }) => {
   const isOwner = workspace.owner?._id === user?.id;
   
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-2">
+    <Card className={styles.workspaceCard}>
+      <CardHeader className={styles.cardHeader}>
+        <div className={styles.cardHeaderTop}>
+          <div className={styles.cardTitleSection}>
             {getRoleIcon(workspace.userRole)}
-            <CardTitle className="text-lg">{workspace.name}</CardTitle>
+            <CardTitle className={styles.cardTitle}>{workspace.name}</CardTitle>
             {workspace.isArchived && (
-              <Badge variant="secondary">
-                <Archive className="h-3 w-3 mr-1" />
+              <Badge variant="secondary" className={styles.archiveBadge}>
+                <Archive className={styles.archiveIcon} />
                 Archived
               </Badge>
             )}
             {workspace.isPublic && (
-              <Badge variant="outline">Public</Badge>
+              <Badge variant="outline" className={styles.publicBadge}>Public</Badge>
             )}
           </div>
           {isOwner && (
@@ -91,61 +92,62 @@ const WorkspaceCard = ({ workspace, onSelect, onSettings }) => {
                 e.stopPropagation();
                 onSettings(workspace);
               }}
+              className={styles.settingsButton}
             >
-              <Settings className="h-4 w-4" />
+              <Settings className={styles.settingsIcon} />
             </Button>
           )}
         </div>
         {workspace.description && (
-          <CardDescription className="line-clamp-2">
+          <CardDescription className={styles.cardDescription}>
             {workspace.description}
           </CardDescription>
         )}
       </CardHeader>
       
-      <CardContent onClick={() => onSelect(workspace)}>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <FileText className="h-4 w-4" />
-                <span>{workspace.stats?.totalFiles || 0} files</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <HardDrive className="h-4 w-4" />
-                <span>{formatFileSize(workspace.stats?.totalSize || 0)}</span>
-              </div>
-              {workspace.stats?.executionCount > 0 && (
-                <div className="flex items-center space-x-1">
-                  <Play className="h-4 w-4" />
-                  <span>{workspace.stats.executionCount} runs</span>
-                </div>
-              )}
+      <CardContent onClick={() => onSelect(workspace)} className={styles.cardContent}>
+        <div className={styles.cardStats}>
+          <div className={styles.cardStatsLeft}>
+            <div className={styles.statItem}>
+              <FileText className={styles.statIcon} />
+              <span>{workspace.stats?.totalFiles || 0} files</span>
             </div>
+            <div className={styles.statItem}>
+              <HardDrive className={styles.statIcon} />
+              <span>{formatFileSize(workspace.stats?.totalSize || 0)}</span>
+            </div>
+            {workspace.stats?.executionCount > 0 && (
+              <div className={styles.activityStat}>
+                <Play className={styles.activityIcon} />
+                <span>{workspace.stats.executionCount} runs</span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className={styles.cardFooter}>
+          <div className={styles.cardFooterLeft}>
+            <Badge variant="secondary" className={styles.roleBadge}>
+              {workspace.settings?.runtime || 'node'}
+            </Badge>
+            <Badge variant="outline" className={styles.publicFooterBadge}>
+              {workspace.userRole}
+            </Badge>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className="text-xs">
-                {workspace.settings?.runtime || 'node'}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                {workspace.userRole}
-              </Badge>
-            </div>
-            
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
+          <div className={styles.cardFooterRight}>
+            <div className={styles.lastAccessedContainer}>
+              <Clock className={styles.clockIcon} />
               <span>{formatDate(workspace.stats?.lastActivity || workspace.updatedAt)}</span>
             </div>
+            
+            {workspace.collaborators && workspace.collaborators.length > 0 && (
+              <div className={styles.collaboratorsContainer}>
+                <Users className={styles.collaboratorsIcon} />
+                <span>+{workspace.collaborators.length} collaborator{workspace.collaborators.length !== 1 ? 's' : ''}</span>
+              </div>
+            )}
           </div>
-          
-          {workspace.collaborators && workspace.collaborators.length > 0 && (
-            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-              <Users className="h-3 w-3" />
-              <span>+{workspace.collaborators.length} collaborator{workspace.collaborators.length !== 1 ? 's' : ''}</span>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
@@ -154,46 +156,46 @@ const WorkspaceCard = ({ workspace, onSelect, onSettings }) => {
 
 const WorkspaceList = ({ workspaces, onSelect, onSettings }) => {
   return (
-    <div className="space-y-2">
+    <div className={styles.workspaceList}>
       {workspaces.map((workspace) => (
         <div
           key={workspace._id}
-          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
+          className={styles.listItem}
           onClick={() => onSelect(workspace)}
         >
-          <div className="flex items-center space-x-4 flex-1 min-w-0">
+          <div className={styles.listItemContent}>
             {getRoleIcon(workspace.userRole)}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-medium truncate">{workspace.name}</h3>
+            <div className={styles.listItemDetails}>
+              <div className={styles.listItemHeader}>
+                <h3 className={styles.workspaceListTitle}>{workspace.name}</h3>
                 {workspace.isArchived && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Archive className="h-3 w-3 mr-1" />
+                  <Badge variant="secondary" className={styles.listArchiveBadge}>
+                    <Archive className={styles.archiveIcon} />
                     Archived
                   </Badge>
                 )}
                 {workspace.isPublic && (
-                  <Badge variant="outline" className="text-xs">Public</Badge>
+                  <Badge variant="outline" className={styles.listPublicBadge}>Public</Badge>
                 )}
               </div>
               {workspace.description && (
-                <p className="text-sm text-muted-foreground truncate">
+                <p className={styles.listItemDescription}>
                   {workspace.description}
                 </p>
               )}
             </div>
           </div>
           
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-            <div className="flex items-center space-x-1">
-              <FileText className="h-4 w-4" />
+          <div className={styles.listItemRight}>
+            <div className={styles.workspaceListStat}>
+              <FileText className={styles.statIcon} />
               <span>{workspace.stats?.totalFiles || 0}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Clock className="h-4 w-4" />
+            <div className={styles.workspaceListStat}>
+              <Clock className={styles.statIcon} />
               <span>{formatDate(workspace.stats?.lastActivity || workspace.updatedAt)}</span>
             </div>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className={styles.listRoleBadge}>
               {workspace.userRole}
             </Badge>
           </div>
@@ -251,81 +253,81 @@ export const WorkspaceDashboard = ({ onWorkspaceSelect }) => {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className={styles.dashboard}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Workspaces</h1>
-          <p className="text-muted-foreground">
+      <div className={styles.dashboardHeader}>
+        <div className={styles.dashboardHeaderText}>
+          <h1>Workspaces</h1>
+          <p>
             Manage your projects and collaborate with your team
           </p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className={styles.buttonIcon} />
           New Workspace
         </Button>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Workspaces</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+        <div className={styles.statsGrid}>
+          <Card className={styles.statsCard}>
+            <CardHeader className={styles.statsCardHeader}>
+              <CardTitle className={styles.statsCardTitle}>Total Workspaces</CardTitle>
+              <FileText className={styles.statsCardIcon} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.stats?.totalWorkspaces || 0}</div>
+              <div className={styles.statsCardValue}>{stats.stats?.totalWorkspaces || 0}</div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Owned</CardTitle>
-              <Crown className="h-4 w-4 text-muted-foreground" />
+          <Card className={styles.statsCard}>
+            <CardHeader className={styles.statsCardHeader}>
+              <CardTitle className={styles.statsCardTitle}>Owned</CardTitle>
+              <Crown className={styles.statsCardIcon} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.stats?.ownedWorkspaces || 0}</div>
+              <div className={styles.statsCardValue}>{stats.stats?.ownedWorkspaces || 0}</div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Collaborative</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+          <Card className={styles.statsCard}>
+            <CardHeader className={styles.statsCardHeader}>
+              <CardTitle className={styles.statsCardTitle}>Collaborative</CardTitle>
+              <Users className={styles.statsCardIcon} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.stats?.collaborativeWorkspaces || 0}</div>
+              <div className={styles.statsCardValue}>{stats.stats?.collaborativeWorkspaces || 0}</div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Files</CardTitle>
-              <HardDrive className="h-4 w-4 text-muted-foreground" />
+          <Card className={styles.statsCard}>
+            <CardHeader className={styles.statsCardHeader}>
+              <CardTitle className={styles.statsCardTitle}>Total Files</CardTitle>
+              <HardDrive className={styles.statsCardIcon} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.stats?.totalFiles || 0}</div>
+              <div className={styles.statsCardValue}>{stats.stats?.totalFiles || 0}</div>
             </CardContent>
           </Card>
         </div>
       )}
 
       {/* Filters and Controls */}
-      <div className="flex items-center justify-between space-x-4">
-        <div className="flex items-center space-x-2 flex-1">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className={styles.filtersSection}>
+        <div className={styles.filtersLeft}>
+          <div className={styles.searchContainer}>
+            <Search className={styles.searchIcon} />
             <Input
               placeholder="Search workspaces..."
               value={filters.search}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-8"
+              className={styles.searchInput}
             />
           </div>
           
           <Select value={filters.sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className={styles.selectTrigger}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -336,39 +338,39 @@ export const WorkspaceDashboard = ({ onWorkspaceSelect }) => {
           </Select>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className={styles.viewModeButtons}>
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('grid')}
           >
-            <Grid className="h-4 w-4" />
+            <Grid className={styles.viewIcon} />
           </Button>
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
           >
-            <List className="h-4 w-4" />
+            <List className={styles.viewIcon} />
           </Button>
         </div>
       </div>
 
       {/* Workspace List */}
-      <Tabs defaultValue="active" className="w-full">
+      <Tabs defaultValue="active" className={styles.tabsContainer}>
         <TabsList>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="archived">Archived</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="active" className="space-y-4">
+        <TabsContent value="active" className={styles.tabsContent}>
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className={styles.loadingSpinner}>
+              <div className={styles.spinner}></div>
             </div>
           ) : filteredWorkspaces.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No workspaces found</p>
+            <div className={styles.emptyState}>
+              <p className={styles.emptyStateText}>No workspaces found</p>
               <Button 
                 className="mt-4" 
                 onClick={() => setIsCreateDialogOpen(true)}
@@ -377,7 +379,7 @@ export const WorkspaceDashboard = ({ onWorkspaceSelect }) => {
               </Button>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className={styles.workspaceGrid}>
               {filteredWorkspaces.map((workspace) => (
                 <WorkspaceCard
                   key={workspace._id}
@@ -396,11 +398,11 @@ export const WorkspaceDashboard = ({ onWorkspaceSelect }) => {
           )}
         </TabsContent>
         
-        <TabsContent value="archived" className="space-y-4">
+        <TabsContent value="archived" className={styles.tabsContent}>
           {/* Archived workspaces would be shown here */}
-          <div className="text-center py-8">
-            <Archive className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No archived workspaces</p>
+          <div className={styles.archivedEmptyState}>
+            <Archive className={styles.archivedIcon} />
+            <p className={styles.emptyStateText}>No archived workspaces</p>
           </div>
         </TabsContent>
       </Tabs>

@@ -334,6 +334,125 @@
   display: none;
 }
 
+/* Spacing Utilities - Gap */
+.space-x-1 > * + * {
+  margin-left: var(--spacing-xs);
+}
+
+.space-x-2 > * + * {
+  margin-left: var(--spacing-sm);
+}
+
+.space-x-3 > * + * {
+  margin-left: var(--spacing-md);
+}
+
+.space-x-4 > * + * {
+  margin-left: var(--spacing-lg);
+}
+
+.space-y-1 > * + * {
+  margin-top: var(--spacing-xs);
+}
+
+.space-y-2 > * + * {
+  margin-top: var(--spacing-sm);
+}
+
+.space-y-3 > * + * {
+  margin-top: var(--spacing-md);
+}
+
+.space-y-4 > * + * {
+  margin-top: var(--spacing-lg);
+}
+
+/* Display Utilities */
+.block {
+  display: block;
+}
+
+.inline {
+  display: inline;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Size Utilities */
+.w-full {
+  width: 100%;
+}
+
+.w-auto {
+  width: auto;
+}
+
+.w-4 {
+  width: 1rem;
+}
+
+.w-5 {
+  width: 1.25rem;
+}
+
+.w-8 {
+  width: 2rem;
+}
+
+.h-4 {
+  height: 1rem;
+}
+
+.h-5 {
+  height: 1.25rem;
+}
+
+.h-8 {
+  height: 2rem;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.h-auto {
+  height: auto;
+}
+
+.max-w-sm {
+  max-width: 24rem;
+}
+
+.max-w-md {
+  max-width: 28rem;
+}
+
+.max-w-lg {
+  max-width: 32rem;
+}
+
+.max-w-xl {
+  max-width: 36rem;
+}
+
+.max-w-2xl {
+  max-width: 42rem;
+}
+
+.max-w-7xl {
+  max-width: 80rem;
+}
+
+.max-h-80vh {
+  max-height: 80vh;
+}
+
 /* Text Utilities */
 .text-left {
   text-align: left;
@@ -680,5 +799,144 @@
   
   .xl\:grid-cols-5 {
     grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Additional utilities for remaining TailwindCSS compatibility */
+.border-destructive {
+  border-color: var(--color-danger);
+}
+
+.text-destructive {
+  color: var(--color-danger);
+}
+
+.bg-destructive\/15 {
+  background-color: rgba(220, 53, 69, 0.15);
+}
+
+.sm\:max-w-\[700px\] {
+  max-width: 700px;
+}
+
+/* Hover and interaction states */
+.hover\:shadow-md:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.hover\:bg-muted\/50:hover {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+.hover\:bg-slate-600:hover {
+  background-color: #475569;
+}
+
+.hover\:bg-slate-700:hover {
+  background-color: #334155;
+}
+
+.hover\:text-slate-100:hover {
+  color: #f1f5f9;
+}
+
+.hover\:text-slate-200:hover {
+  color: #e2e8f0;
+}
+
+.hover\:opacity-100:hover {
+  opacity: 1;
+}
+
+/* Transitions */
+.transition-shadow {
+  transition: box-shadow var(--transition-normal);
+}
+
+.transition-colors {
+  transition: color var(--transition-normal), background-color var(--transition-normal);
+}
+
+.transition-opacity {
+  transition: opacity var(--transition-normal);
+}
+
+/* Group hover utilities */
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-70 {
+  opacity: 0.7;
+}
+
+/* Transform utilities */
+.transform {
+  transform: translateZ(0);
+}
+
+.-translate-x-1\/2 {
+  transform: translateX(-50%);
+}
+
+.-translate-y-1\/2 {
+  transform: translateY(-50%);
+}
+
+/* Cursor utilities */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+/* Positioning utilities */
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.top-full {
+  top: 100%;
+}
+
+.left-1\/2 {
+  left: 50%;
+}
+
+.bottom-8 {
+  bottom: 2rem;
+}
+
+.right-4 {
+  right: 1rem;
+}
+
+.top-4 {
+  top: 1rem;
+}
+
+/* Z-index utilities */
+.z-50 {
+  z-index: 50;
+}
+
+/* Whitespace utilities */
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .sm\:max-w-\[700px\] {
+    max-width: 700px;
   }
 }

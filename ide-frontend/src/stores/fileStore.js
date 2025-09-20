@@ -33,8 +33,11 @@ export const useFileStore = create(
     },
 
     loadFiles: async (path = '') => {
-      const { currentWorkspaceId } = get();
+      const { currentWorkspaceId, loading } = get();
       if (!currentWorkspaceId) return;
+      
+      // Prevent multiple simultaneous requests
+      if (loading) return;
 
       set({ loading: true, error: null });
       

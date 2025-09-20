@@ -1,0 +1,181 @@
+/* WorkspaceSelector Component Styles */
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.triggerButton {
+  width: 16rem;
+  justify-content: space-between;
+}
+
+.workspaceInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.roleIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+  flex-shrink: 0;
+}
+
+.workspaceName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: var(--color-text-muted);
+}
+
+.chevronIcon {
+  height: 1rem;
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+.dropdownContent {
+  width: 20rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.addButton {
+  padding: 0.5rem;
+}
+
+.addIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.searchContainer {
+  padding: 0 0.5rem 0.5rem;
+}
+
+.searchWrapper {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.625rem;
+  height: 1rem;
+  width: 1rem;
+  color: var(--color-text-muted);
+}
+
+.searchInput {
+  padding-left: 2rem;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+  border-width: 0 0 2px 0;
+  border-style: solid;
+  border-color: var(--color-primary);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.noResults {
+  color: var(--color-text-muted);
+}
+
+.workspaceItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+}
+
+.workspaceMain {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.workspaceDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.workspaceHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.workspaceTitle {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archiveIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.workspaceDescription {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspaceMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.roleBadge {
+  font-size: 0.75rem;
+  background-color: var(--color-background-secondary);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius);
+}
+
+.collaboratorCount {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.menuIcon {
+  height: 1rem;
+  width: 1rem;
+  margin-right: 0.5rem;
+}

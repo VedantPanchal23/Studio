@@ -5,15 +5,15 @@ import useEditorStore from '../../store/editorStore';
 import './EditorArea.css';
 
 const EditorArea = () => {
-    const { openFiles, activeFile, setActiveFile, closeFile } = useEditorStore();
+    const { tabs, activeTabId, setActiveTab, closeTab } = useEditorStore();
 
-    const handleTabClick = (filePath) => {
-        setActiveFile(filePath);
+    const handleTabClick = (tabId) => {
+        setActiveTab(tabId);
     };
 
-    const handleTabClose = (e, filePath) => {
+    const handleTabClose = (e, tabId) => {
         e.stopPropagation();
-        closeFile(filePath);
+        closeTab(tabId);
     };
 
     const getFileIcon = (fileName) => {
@@ -53,7 +53,7 @@ const EditorArea = () => {
         return filePath.split('/').pop() || filePath;
     };
 
-    if (openFiles.length === 0) {
+    if (!tabs || tabs.length === 0) {
         return (
             <div className="editor-area">
                 <div className="editor-welcome">
@@ -67,23 +67,23 @@ const EditorArea = () => {
     return (
         <div className="editor-area">
             <div className="editor-tabs">
-                {openFiles.map((file) => (
+                {tabs.map((tab) => (
                     <div
-                        key={file.path}
-                        className={`editor-tab ${activeFile === file.path ? 'editor-tab--active' : ''
+                        key={tab.id}
+                        className={`editor-tab ${activeTabId === tab.id ? 'editor-tab--active' : ''
                             }`}
-                        onClick={() => handleTabClick(file.path)}
+                        onClick={() => handleTabClick(tab.id)}
                     >
                         <span className="editor-tab__icon">
-                            {getFileIcon(getFileName(file.path))}
+                            {getFileIcon(tab.name)}
                         </span>
                         <span className="editor-tab__title">
-                            {getFileName(file.path)}
+                            {tab.name}
                         </span>
                         <button
                             className="editor-tab__close"
-                            onClick={(e) => handleTabClose(e, file.path)}
-                            aria-label={`Close ${getFileName(file.path)}`}
+                            onClick={(e) => handleTabClose(e, tab.id)}
+                            aria-label={`Close ${tab.name}`}
                         >
                             <X size={12} />
                         </button>

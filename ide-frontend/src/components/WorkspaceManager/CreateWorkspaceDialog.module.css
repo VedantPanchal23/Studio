@@ -1,0 +1,113 @@
+/* Create Workspace Dialog Styles */
+.dialogContent {
+  max-width: 500px;
+}
+
+.dialogTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.titleIcon {
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.errorAlert {
+  background-color: var(--color-destructive-background);
+  color: var(--color-destructive-foreground);
+  font-size: 0.875rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fieldError {
+  font-size: 0.875rem;
+  color: var(--color-destructive);
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.runtimeOption {
+  display: flex;
+  flex-direction: column;
+}
+
+.runtimeDescription {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkboxLabel {
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.checkboxDescription {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-left: 1.5rem;
+}
+
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loadingIcon {
+  height: 1rem;
+  width: 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.createIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Override default spacing for form elements */
+.form .fieldGroup:not(:first-child) {
+  margin-top: 0;
+}
+
+.form > *:not(:last-child) {
+  margin-bottom: 0;
+}

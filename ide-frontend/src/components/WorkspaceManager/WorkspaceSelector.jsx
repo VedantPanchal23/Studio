@@ -22,6 +22,7 @@ import {
 } from '../ui/dialog';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
 import { WorkspaceSettingsDialog } from './WorkspaceSettingsDialog';
+import styles from './WorkspaceSelector.module.css';
 
 export const WorkspaceSelector = ({ onWorkspaceChange }) => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -60,9 +61,9 @@ export const WorkspaceSelector = ({ onWorkspaceChange }) => {
 
   const getRoleIcon = (workspace) => {
     if (workspace.owner?._id === user?.id) {
-      return <Settings className="h-3 w-3" />;
+      return <Settings className={styles.roleIcon} />;
     }
-    return <Users className="h-3 w-3" />;
+    return <Users className={styles.roleIcon} />;
   };
 
   const getRoleBadge = (workspace) => {
@@ -73,46 +74,47 @@ export const WorkspaceSelector = ({ onWorkspaceChange }) => {
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className={styles.container}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-64 justify-between">
-            <div className="flex items-center space-x-2">
+          <Button variant="outline" className={styles.triggerButton}>
+            <div className={styles.workspaceInfo}>
               {currentWorkspace ? (
                 <>
                   {getRoleIcon(currentWorkspace)}
-                  <span className="truncate">{currentWorkspace.name}</span>
+                  <span className={styles.workspaceName}>{currentWorkspace.name}</span>
                 </>
               ) : (
-                <span className="text-muted-foreground">Select workspace</span>
+                <span className={styles.placeholder}>Select workspace</span>
               )}
             </div>
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown className={styles.chevronIcon} />
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent className="w-80" align="start">
+        <DropdownMenuContent className={styles.dropdownContent} align="start">
           <DropdownMenuLabel>
-            <div className="flex items-center justify-between">
+            <div className={styles.header}>
               <span>Workspaces</span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCreateDialogOpen(true)}
+                className={styles.addButton}
               >
-                <Plus className="h-4 w-4" />
+                <Plus className={styles.addIcon} />
               </Button>
             </div>
           </DropdownMenuLabel>
           
-          <div className="px-2 pb-2">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className={styles.searchContainer}>
+            <div className={styles.searchWrapper}>
+              <Search className={styles.searchIcon} />
               <Input
                 placeholder="Search workspaces..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-8"
+                className={styles.searchInput}
               />
             </div>
           </div>
@@ -121,44 +123,44 @@ export const WorkspaceSelector = ({ onWorkspaceChange }) => {
           
           {loading ? (
             <DropdownMenuItem disabled>
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <div className={styles.loadingContainer}>
+                <div className={styles.spinner}></div>
                 <span>Loading...</span>
               </div>
             </DropdownMenuItem>
           ) : filteredWorkspaces.length === 0 ? (
             <DropdownMenuItem disabled>
-              <span className="text-muted-foreground">No workspaces found</span>
+              <span className={styles.noResults}>No workspaces found</span>
             </DropdownMenuItem>
           ) : (
             filteredWorkspaces.map((workspace) => (
               <DropdownMenuItem
                 key={workspace._id}
                 onClick={() => handleWorkspaceSelect(workspace)}
-                className="flex items-center justify-between p-3"
+                className={styles.workspaceItem}
               >
-                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <div className={styles.workspaceMain}>
                   {getRoleIcon(workspace)}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium truncate">{workspace.name}</span>
+                  <div className={styles.workspaceDetails}>
+                    <div className={styles.workspaceHeader}>
+                      <span className={styles.workspaceTitle}>{workspace.name}</span>
                       {workspace.isArchived && (
-                        <Archive className="h-3 w-3 text-muted-foreground" />
+                        <Archive className={styles.archiveIcon} />
                       )}
                     </div>
                     {workspace.description && (
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className={styles.workspaceDescription}>
                         {workspace.description}
                       </p>
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col items-end space-y-1">
-                  <span className="text-xs bg-secondary px-2 py-0.5 rounded">
+                <div className={styles.workspaceMeta}>
+                  <span className={styles.roleBadge}>
                     {getRoleBadge(workspace)}
                   </span>
                   {workspace.collaborators?.length > 0 && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className={styles.collaboratorCount}>
                       +{workspace.collaborators.length} collaborator{workspace.collaborators.length !== 1 ? 's' : ''}
                     </span>
                   )}
@@ -170,13 +172,13 @@ export const WorkspaceSelector = ({ onWorkspaceChange }) => {
           <DropdownMenuSeparator />
           
           <DropdownMenuItem onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className={styles.menuIcon} />
             Create new workspace
           </DropdownMenuItem>
           
           {currentWorkspace && currentWorkspace.owner?._id === user?.id && (
             <DropdownMenuItem onClick={() => setIsSettingsDialogOpen(true)}>
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className={styles.menuIcon} />
               Workspace settings
             </DropdownMenuItem>
           )}

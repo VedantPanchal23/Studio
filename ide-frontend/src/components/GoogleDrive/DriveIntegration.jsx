@@ -20,6 +20,7 @@ import useDriveStore from '../../stores/driveStore';
 import DriveFileBrowser from './DriveFileBrowser';
 import DriveSyncPanel from './DriveSyncPanel';
 import DriveStorageInfo from './DriveStorageInfo';
+import styles from './DriveIntegration.module.css';
 
 const DriveIntegration = ({ workspaceId, onFileImport }) => {
   const {
@@ -96,26 +97,26 @@ const DriveIntegration = ({ workspaceId, onFileImport }) => {
   if (isLoading && !isConnected) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center p-6">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          <span>Checking Google Drive connection...</span>
+        <CardContent className={styles.loadingCard}>
+          <Loader2 className={styles.loadingSpinner} />
+          <span className={styles.loadingText}>Checking Google Drive connection...</span>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className={styles.driveIntegration}>
       {/* Connection Status */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Cloud className="h-5 w-5" />
+          <div className={styles.statusHeader}>
+            <div className={styles.statusLeft}>
+              <Cloud className={styles.statusIcon} />
               <CardTitle>Google Drive Integration</CardTitle>
             </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant={status.variant} className="flex items-center space-x-1">
+            <div className={styles.statusRight}>
+              <Badge variant={status.variant} className={styles.statusBadge}>
                 <StatusIcon className={`h-3 w-3 ${status.color}`} />
                 <span>{status.text}</span>
               </Badge>
@@ -124,8 +125,9 @@ const DriveIntegration = ({ workspaceId, onFileImport }) => {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isLoading}
+                className={styles.refreshButton}
               >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`${styles.refreshIcon} ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
             </div>
           </div>
@@ -135,9 +137,9 @@ const DriveIntegration = ({ workspaceId, onFileImport }) => {
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
+            <Alert className={styles.errorAlert}>
+              <AlertCircle className={styles.errorIcon} />
+              <AlertDescription className={styles.errorContent}>
                 <span>{error}</span>
                 <Button variant="ghost" size="sm" onClick={clearError}>
                   Dismiss
@@ -147,95 +149,96 @@ const DriveIntegration = ({ workspaceId, onFileImport }) => {
           )}
 
           {!isConnected ? (
-            <div className="text-center py-6">
-              <Cloud className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Connect to Google Drive</h3>
-              <p className="text-gray-600 mb-4">
+            <div className={styles.connectSection}>
+              <Cloud className={styles.connectIcon} />
+              <h3 className={styles.connectTitle}>Connect to Google Drive</h3>
+              <p className={styles.connectDescription}>
                 Connect your Google Drive to sync files and enable automatic backup.
               </p>
-              <Button onClick={handleConnect} disabled={isLoading}>
+              <Button onClick={handleConnect} disabled={isLoading} className={styles.connectButton}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <Loader2 className={`${styles.connectButtonIcon} animate-spin`} />
                     Connecting...
                   </>
                 ) : (
                   <>
-                    <Cloud className="h-4 w-4 mr-2" />
+                    <Cloud className={styles.connectButtonIcon} />
                     Connect Google Drive
                   </>
                 )}
               </Button>
             </div>
           ) : !hasAccess ? (
-            <div className="text-center py-6">
-              <AlertCircle className="h-12 w-12 mx-auto text-orange-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">Access Expired</h3>
-              <p className="text-gray-600 mb-4">
+            <div className={styles.accessExpiredSection}>
+              <AlertCircle className={styles.accessExpiredIcon} />
+              <h3 className={styles.accessExpiredTitle}>Access Expired</h3>
+              <p className={styles.accessExpiredDescription}>
                 Your Google Drive access has expired. Please reconnect to continue using Drive features.
               </p>
-              <div className="flex justify-center space-x-2">
+              <div className={styles.accessExpiredActions}>
                 <Button onClick={handleConnect} disabled={isLoading}>
                   {isLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <Loader2 className={`${styles.connectButtonIcon} animate-spin`} />
                       Reconnecting...
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
+                      <RefreshCw className={styles.connectButtonIcon} />
                       Reconnect
                     </>
                   )}
                 </Button>
                 <Button variant="outline" onClick={handleDisconnect}>
-                  <CloudOff className="h-4 w-4 mr-2" />
+                  <CloudOff className={styles.connectButtonIcon} />
                   Disconnect
                 </Button>
               </div>
             </div>
           ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="browser" className="flex items-center space-x-2">
-                  <FolderOpen className="h-4 w-4" />
+            <Tabs value={activeTab} onValueChange={setActiveTab} className={styles.tabsContainer}>
+              <TabsList className={styles.tabsList}>
+                <TabsTrigger value="browser" className={styles.tabsTrigger}>
+                  <FolderOpen className={styles.tabIcon} />
                   <span>Browse Files</span>
                 </TabsTrigger>
-                <TabsTrigger value="sync" className="flex items-center space-x-2">
-                  <Sync className="h-4 w-4" />
+                <TabsTrigger value="sync" className={styles.tabsTrigger}>
+                  <Sync className={styles.tabIcon} />
                   <span>Sync</span>
                 </TabsTrigger>
-                <TabsTrigger value="storage" className="flex items-center space-x-2">
-                  <Cloud className="h-4 w-4" />
+                <TabsTrigger value="storage" className={styles.tabsTrigger}>
+                  <Cloud className={styles.tabIcon} />
                   <span>Storage</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="browser" className="mt-4">
+              <TabsContent value="browser" className={styles.tabsContent}>
                 <DriveFileBrowser 
                   workspaceId={workspaceId}
                   onFileImport={onFileImport}
                 />
               </TabsContent>
 
-              <TabsContent value="sync" className="mt-4">
+              <TabsContent value="sync" className={styles.tabsContent}>
                 <DriveSyncPanel workspaceId={workspaceId} />
               </TabsContent>
 
-              <TabsContent value="storage" className="mt-4">
+              <TabsContent value="storage" className={styles.tabsContent}>
                 <DriveStorageInfo />
               </TabsContent>
             </Tabs>
           )}
 
           {isConnected && hasAccess && (
-            <div className="flex justify-end mt-4 pt-4 border-t">
+            <div className={styles.disconnectActions}>
               <Button 
                 variant="outline" 
                 onClick={handleDisconnect}
                 disabled={isLoading}
+                className={styles.disconnectButton}
               >
-                <CloudOff className="h-4 w-4 mr-2" />
+                <CloudOff className={styles.connectButtonIcon} />
                 Disconnect Drive
               </Button>
             </div>
