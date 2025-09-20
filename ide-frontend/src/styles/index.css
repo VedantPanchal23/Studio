@@ -1,0 +1,75 @@
+/* Main CSS Entry Point */
+
+/* Import CSS Custom Properties */
+@import './variables.css';
+
+/* Import CSS Reset */
+@import './reset.css';
+
+/* Import Utility Classes */
+@import './utilities.css';
+
+/* Global Styles */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Button focus styles */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styles for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Selection styles */
+::selection {
+  background-color: var(--color-primary);
+  color: var(--text-inverse);
+}
+
+/* Print styles */
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}

@@ -1,0 +1,197 @@
+/* Select Component CSS Module */
+
+.trigger {
+  display: flex;
+  height: 2.5rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  outline: none;
+  cursor: pointer;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--border-secondary);
+}
+
+.trigger:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background-color: var(--bg-secondary);
+}
+
+.trigger[data-placeholder] {
+  color: var(--text-muted);
+}
+
+.triggerIcon {
+  height: 1rem;
+  width: 1rem;
+  opacity: 0.5;
+  transition: transform var(--transition-fast);
+}
+
+.trigger[data-state="open"] .triggerIcon {
+  transform: rotate(180deg);
+}
+
+.content {
+  position: relative;
+  z-index: var(--z-dropdown);
+  max-height: 24rem;
+  min-width: 8rem;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.content[data-state="open"] {
+  animation: fadeIn var(--transition-fast), scaleIn var(--transition-fast);
+}
+
+.content[data-state="closed"] {
+  animation: fadeOut var(--transition-fast), scaleOut var(--transition-fast);
+}
+
+.viewport {
+  padding: var(--spacing-xs);
+}
+
+.scrollButton {
+  display: flex;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs) 0;
+  color: var(--text-secondary);
+}
+
+.scrollButton:hover {
+  color: var(--text-primary);
+}
+
+.label {
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) 2rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  cursor: default;
+  user-select: none;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-sm) 2rem var(--spacing-sm) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.item:focus {
+  background-color: var(--bg-accent);
+  color: var(--text-primary);
+}
+
+.item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.itemIndicator {
+  position: absolute;
+  left: var(--spacing-sm);
+  display: flex;
+  height: 0.875rem;
+  width: 0.875rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemText {
+  line-height: 1;
+}
+
+.separator {
+  margin: var(--spacing-xs) calc(-1 * var(--spacing-xs));
+  height: 1px;
+  background-color: var(--border-secondary);
+}
+
+/* Size variants */
+.triggerSmall {
+  height: 2rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.triggerLarge {
+  height: 3rem;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-base);
+}
+
+/* Error state */
+.triggerError {
+  border-color: var(--color-danger);
+}
+
+.triggerError:focus {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.95);
+  }
+}

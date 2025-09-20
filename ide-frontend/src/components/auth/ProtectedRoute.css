@@ -1,0 +1,34 @@
+/* Protected Route Loading Styles */
+.protected-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9fafb;
+}
+
+.dark .protected-loading {
+  background-color: #111827;
+}
+
+.protected-loading__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  height: 2rem;
+  width: 2rem;
+  color: #2563eb;
+}
+
+.loading-text {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.dark .loading-text {
+  color: #9ca3af;
+}

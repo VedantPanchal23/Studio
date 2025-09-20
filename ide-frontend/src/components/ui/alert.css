@@ -1,0 +1,35 @@
+.alert {
+  position: relative;
+  width: 100%;
+  border-radius: calc(var(--radius) + 2px);
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.alert--default {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.alert--destructive {
+  border-color: var(--destructive);
+  color: var(--destructive);
+  background-color: var(--background);
+}
+
+.alert__title {
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin-top: 0;
+}
+
+.alert__description {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.alert__description p {
+  line-height: 1.625;
+}

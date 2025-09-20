@@ -1,0 +1,112 @@
+/* Import our new CSS foundation */
+@import './styles/index.css';
+
+/* Utility classes for accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Animation keyframes */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+/* LSP Diagnostic Styles */
+.lsp-diagnostic-error {
+  border-bottom: 2px wavy #ff0000;
+}
+
+.lsp-diagnostic-warning {
+  border-bottom: 2px wavy #ff8c00;
+}
+
+.lsp-diagnostic-info {
+  border-bottom: 2px wavy #0080ff;
+}
+
+.lsp-diagnostic-hint {
+  border-bottom: 1px dotted #00ff00;
+}
+
+/* Monaco Editor LSP Integration Styles */
+.monaco-editor .lsp-diagnostic-error {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.monaco-editor .lsp-diagnostic-warning {
+  background-color: rgba(255, 140, 0, 0.1);
+}
+
+.monaco-editor .lsp-diagnostic-info {
+  background-color: rgba(0, 128, 255, 0.1);
+}
+
+.monaco-editor .lsp-diagnostic-hint {
+  background-color: rgba(0, 255, 0, 0.05);
+}
+
+/* LSP Hover Widget Styles */
+.monaco-editor .monaco-hover-content {
+  background-color: #1e293b !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+.monaco-editor .monaco-hover-content code {
+  background-color: #0f172a !important;
+  color: #94a3b8 !important;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* LSP Completion Widget Styles */
+.monaco-editor .suggest-widget {
+  background-color: #1e293b !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+  background-color: transparent !important;
+  color: #e2e8f0 !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
+  background-color: #334155 !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row .monaco-icon-label .monaco-icon-label-description-container {
+  color: #94a3b8 !important;
+}
+
+/* LSP Signature Help Widget Styles */
+.monaco-editor .parameter-hints-widget {
+  background-color: #1e293b !important;
+  border: 1px solid #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+.monaco-editor .parameter-hints-widget .signature {
+  color: #e2e8f0 !important;
+}
+
+.monaco-editor .parameter-hints-widget .parameter.active {
+  background-color: #334155 !important;
+  color: #fbbf24 !important;
+}

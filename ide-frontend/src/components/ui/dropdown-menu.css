@@ -1,0 +1,47 @@
+/* Dropdown Menu Styles */
+.dropdown-menu-content {
+  animation: dropdown-menu-in 0.1s ease-out;
+}
+
+@keyframes dropdown-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dropdown-menu-item {
+  transition: all 0.1s ease-in-out;
+}
+
+.dropdown-menu-item:hover {
+  background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
+}
+
+.dropdown-menu-item:focus {
+  outline: none;
+  background-color: var(--focus-bg, rgba(0, 0, 0, 0.1));
+}
+
+.dropdown-menu-separator {
+  background-color: var(--border-color, rgba(0, 0, 0, 0.1));
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .dropdown-menu-item:hover {
+    background-color: var(--hover-bg-dark, rgba(255, 255, 255, 0.05));
+  }
+  
+  .dropdown-menu-item:focus {
+    background-color: var(--focus-bg-dark, rgba(255, 255, 255, 0.1));
+  }
+  
+  .dropdown-menu-separator {
+    background-color: var(--border-color-dark, rgba(255, 255, 255, 0.1));
+  }
+}

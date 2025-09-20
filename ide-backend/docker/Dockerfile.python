@@ -1,0 +1,82 @@
+# Python runtime container for secure code execution
+FROM python:3.11-alpine
+
+# Install security updates and minimal build tools
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+        dumb-init \
+        su-exec \
+        gcc \
+        musl-dev \
+        libffi-dev \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/*
+
+# Create non-root user with minimal privileges
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup -s /bin/sh -h /tmp
+
+# Install essential Python packages with security considerations
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        numpy==1.24.* \
+        pandas==2.0.* \
+        requests==2.31.* \
+        matplotlib==3.7.* \
+        seaborn==0.12.* \
+    && pip cache purge
+
+# Create secure workspace directory
+RUN mkdir -p /workspace && \
+    chown appuser:appgroup /workspace && \
+    chmod 755 /workspace
+
+# Remove build dependencies and unnecessary files
+RUN apk del gcc musl-dev libffi-dev \
+    && rm -rf /usr/share/man/* \
+    && rm -rf /usr/share/doc/* \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/* \
+    && rm -rf /root/.cache
+
+# Create restricted tmp directories
+RUN mkdir -p /tmp/workspace && \
+    chown appuser:appgroup /tmp/workspace && \
+    chmod 700 /tmp/workspace
+
+# Set working directory
+WORKDIR /workspace
+
+# Switch to non-root user
+USER appuser
+
+# Set up secure environment
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHASHSEED=random \
+    PYTHONIOENCODING=utf-8 \
+    HOME=/tmp \
+    USER=appuser \
+    PATH=/usr/local/bin:/usr/bin:/bin \
+    PYTHONPATH=/workspace
+
+# Disable pip version check and warnings
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Use dumb-init as entrypoint for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Default command
+CMD ["/bin/sh"]
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python --version || exit 1
+
+# Security labels
+LABEL security.level="high" \
+      security.isolation="complete" \
+      security.user="appuser" \
+      maintainer="IDE Security Team"

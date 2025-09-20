@@ -1,0 +1,71 @@
+# Node.js runtime container for secure code execution
+FROM node:18-alpine
+
+# Install security updates and minimal tools
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+        dumb-init \
+        su-exec \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/*
+
+# Create non-root user with minimal privileges
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup -s /bin/sh -h /tmp
+
+# Create secure workspace directory
+RUN mkdir -p /workspace && \
+    chown appuser:appgroup /workspace && \
+    chmod 755 /workspace
+
+# Remove unnecessary packages and files
+RUN apk del --purge \
+    && rm -rf /usr/share/man/* \
+    && rm -rf /usr/share/doc/* \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/* \
+    && rm -rf /var/tmp/*
+
+# Set secure file permissions
+RUN chmod 755 /usr/local/bin/node && \
+    chmod 755 /usr/local/bin/npm
+
+# Create restricted tmp directories
+RUN mkdir -p /tmp/workspace && \
+    chown appuser:appgroup /tmp/workspace && \
+    chmod 700 /tmp/workspace
+
+# Set working directory
+WORKDIR /workspace
+
+# Switch to non-root user
+USER appuser
+
+# Set up secure environment
+ENV NODE_ENV=production \
+    HOME=/tmp \
+    USER=appuser \
+    PATH=/usr/local/bin:/usr/bin:/bin \
+    NODE_OPTIONS="--max-old-space-size=128 --max-semi-space-size=16" \
+    UV_THREADPOOL_SIZE=2
+
+# Disable npm update notifications and telemetry
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false
+
+# Use dumb-init as entrypoint for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Default command
+CMD ["/bin/sh"]
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node --version || exit 1
+
+# Security labels
+LABEL security.level="high" \
+      security.isolation="complete" \
+      security.user="appuser" \
+      maintainer="IDE Security Team"

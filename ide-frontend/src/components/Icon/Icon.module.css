@@ -1,0 +1,94 @@
+/* Icon Component Styles */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+  line-height: 1;
+}
+
+.icon:hover {
+  opacity: 0.8;
+}
+
+/* Fallback icon styling */
+.fallback {
+  opacity: 0.7;
+  filter: grayscale(0.3);
+}
+
+.fallback:hover {
+  opacity: 0.9;
+  filter: grayscale(0.1);
+}
+
+/* Size variants for common use cases */
+.icon.small {
+  width: 12px;
+  height: 12px;
+}
+
+.icon.medium {
+  width: 16px;
+  height: 16px;
+}
+
+.icon.large {
+  width: 20px;
+  height: 20px;
+}
+
+.icon.xlarge {
+  width: 24px;
+  height: 24px;
+}
+
+/* Theme-aware icon colors */
+.icon.primary {
+  color: var(--color-primary);
+}
+
+.icon.secondary {
+  color: var(--color-secondary);
+}
+
+.icon.success {
+  color: var(--color-success);
+}
+
+.icon.danger {
+  color: var(--color-danger);
+}
+
+.icon.warning {
+  color: var(--color-warning);
+}
+
+.icon.muted {
+  color: var(--text-muted);
+}
+
+/* File type icon specific styles */
+.fileTypeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fileTypeIcon.directory {
+  color: var(--color-primary);
+}
+
+.fileTypeIcon.file {
+  color: var(--text-secondary);
+}
+
+/* Animation for folder open/close */
+.fileTypeIcon.folder {
+  transition: transform var(--transition-fast);
+}
+
+.fileTypeIcon.folder:hover {
+  transform: scale(1.1);
+}
