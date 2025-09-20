@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../../stores/authStore';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -12,13 +12,17 @@ import './LoginPage.css';
  */
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { 
-    isAuthenticated, 
-    isLoading, 
-    error, 
-    loginWithGoogle, 
-    clearError 
+  const {
+    isAuthenticated,
+    isLoading,
+    error,
+    loginWithGoogle,
+    login,
+    clearError
   } = useAuthStore();
+
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [localError, setLocalError] = useState(null);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -35,6 +39,25 @@ const LoginPage = () => {
   const handleGoogleLogin = () => {
     clearError();
     loginWithGoogle();
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
+
+  const handlePasswordLogin = async (e) => {
+    e.preventDefault();
+    setLocalError(null);
+    clearError();
+    if (!form.email || !form.password) {
+      setLocalError('Email and password are required');
+      return;
+    }
+    const result = await login({ email: form.email, password: form.password });
+    if (result.success) {
+      navigate('/ide');
+    }
   };
 
   if (isLoading) {
@@ -65,16 +88,49 @@ const LoginPage = () => {
               Sign in to access your development environment
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="login-content">
-            {error && (
+            {(error || localError) && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  {error}
+                  {localError || error}
                 </AlertDescription>
               </Alert>
             )}
-            
+
+            {/* Email/password form */}
+            <form onSubmit={handlePasswordLogin} className="auth-form">
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleInputChange}
+                  placeholder="you@example.com"
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  value={form.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                />
+              </div>
+              <Button type="submit" disabled={isLoading} className="login-button">
+                {isLoading ? <Loader2 className="button-icon animate-spin" /> : 'Log In'}
+              </Button>
+            </form>
+
+            <div className="login-divider" style={{ textAlign: 'center', fontSize: '0.75rem', color: '#6b7280' }}>
+              <span>OR</span>
+            </div>
+
             <Button
               onClick={handleGoogleLogin}
               disabled={isLoading}
@@ -88,7 +144,7 @@ const LoginPage = () => {
               )}
               Continue with Google
             </Button>
-            
+
             <div className="login-terms">
               <p>
                 By signing in, you agree to our{' '}
@@ -100,10 +156,13 @@ const LoginPage = () => {
                   Privacy Policy
                 </a>
               </p>
+              <p style={{ marginTop: '0.5rem' }}>
+                New user? <Link to="/signup" className="login-link">Create an account</Link>
+              </p>
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="login-footer">
           <p className="login-footer__text">
             New to Browser IDE?{' '}

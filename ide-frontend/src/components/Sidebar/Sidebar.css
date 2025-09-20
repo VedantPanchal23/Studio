@@ -1,0 +1,77 @@
+.sidebar {
+    width: var(--vscode-sidebar-default-width);
+    min-width: var(--vscode-sidebar-min-width);
+    background-color: var(--vscode-sidebar-background);
+    border-right: 1px solid var(--vscode-border);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: var(--vscode-sidebar-background);
+    border-bottom: 1px solid var(--vscode-border);
+    min-height: 35px;
+}
+
+.sidebar__title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vscode-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.sidebar__collapse-btn {
+    background: none;
+    border: none;
+    color: var(--vscode-foreground);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar__collapse-btn:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar__content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        max-width: 300px;
+        position: absolute;
+        left: var(--vscode-activity-bar-width);
+        top: 0;
+        bottom: 0;
+        z-index: var(--z-sidebar);
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .sidebar__collapse-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}

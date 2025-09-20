@@ -9,15 +9,16 @@ class DockerService {
   constructor() {
     this.docker = new Docker();
     this.containers = new Map(); // Track active containers
+    this.isAvailable = false; // Track if Docker is available
     this.baseImages = {
-      'node': 'ide-node:latest',
-      'python': 'ide-python:latest',
-      'java': 'ide-java:latest',
-      'cpp': 'ide-cpp:latest',
-      'go': 'ide-go:latest',
-      'rust': 'ide-rust:latest'
+      'node': 'node:18-alpine',
+      'python': 'python:3.11-alpine',
+      'java': 'openjdk:17-alpine',
+      'cpp': 'alpine:latest',  // Use alpine for C++ with gcc installed
+      'go': 'golang:1.21-alpine',
+      'rust': 'rust:1.70-alpine'
     };
-    
+
     // Resource limits for containers
     this.resourceLimits = {
       memory: 512 * 1024 * 1024, // 512MB
@@ -39,14 +40,65 @@ class DockerService {
       // Test Docker connection
       await this.docker.ping();
       logger.info('Docker connection established');
-      
-      // Pull base images if they don't exist
-      await this.pullBaseImages();
-      
+
+      // Start pulling base images in background (don't wait for completion)
+      this.pullBaseImagesInBackground();
+
+      this.isAvailable = true;
       return true;
     } catch (error) {
-      logger.error('Failed to initialize Docker service:', error);
-      throw new Error('Docker service initialization failed');
+      logger.warn('Docker is not available. Code execution features will be disabled:', error.message);
+      this.isAvailable = false;
+      return false;
+    }
+  }
+
+  /**
+   * Pull base images in the background without blocking server startup
+   */
+  async pullBaseImagesInBackground() {
+    // Start background pulling
+    setImmediate(async () => {
+      try {
+        await this.pullBaseImages();
+        logger.info('Base images pulled successfully in background');
+      } catch (error) {
+        logger.warn('Failed to pull some base images in background:', error.message);
+      }
+    });
+  }  /**
+   * Ensure a Docker image is available locally, pull if necessary
+   */
+  async ensureImageAvailable(imageName) {
+    try {
+      // Check if image exists locally
+      const images = await this.docker.listImages({
+        filters: { reference: [imageName] }
+      });
+
+      if (images && images.length > 0) {
+        logger.debug(`Image ${imageName} already exists locally`);
+        return;
+      }
+
+      // Pull image if it doesn't exist
+      logger.info(`Pulling image ${imageName}...`);
+      const stream = await this.docker.pull(imageName);
+
+      await new Promise((resolve, reject) => {
+        this.docker.modem.followProgress(stream, (err, output) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(output);
+          }
+        });
+      });
+
+      logger.info(`Successfully pulled image ${imageName}`);
+    } catch (error) {
+      logger.error(`Failed to ensure image ${imageName} is available:`, error);
+      throw new Error(`Failed to pull required image: ${imageName}`);
     }
   }
 
@@ -57,12 +109,12 @@ class DockerService {
     const pullPromises = Object.entries(this.baseImages).map(async ([language, image]) => {
       try {
         logger.info(`Pulling base image for ${language}: ${image}`);
-        
+
         // Check if image exists locally
         const images = await this.docker.listImages({
           filters: { reference: [image] }
         });
-        
+
         if (images && images.length === 0) {
           // Pull image if it doesn't exist
           const stream = await this.docker.pull(image);
@@ -76,7 +128,7 @@ class DockerService {
         // Don't throw here, continue with other images
       }
     });
-    
+
     await Promise.allSettled(pullPromises);
   }
 
@@ -84,15 +136,22 @@ class DockerService {
    * Create and start a container for code execution
    */
   async createContainer(language, workspaceId, userId) {
+    if (!this.isAvailable) {
+      throw new Error('Docker is not available');
+    }
+
     try {
       const baseImage = this.baseImages[language];
       if (!baseImage) {
         throw new Error(`Unsupported language: ${language}`);
       }
 
+      // Ensure base image is available locally
+      await this.ensureImageAvailable(baseImage);
+
       // Get secure container configuration
       const secureConfig = containerSecurityService.getSecureContainerConfig(language, workspaceId, userId);
-      
+
       const containerConfig = {
         Image: baseImage,
         WorkingDir: '/workspace',
@@ -108,7 +167,7 @@ class DockerService {
 
       const container = await this.docker.createContainer(containerConfig);
       await container.start();
-      
+
       // Store container reference with security monitoring
       const containerInfo = {
         container,
@@ -120,14 +179,14 @@ class DockerService {
         securityLevel: 'high',
         lastActivity: new Date()
       };
-      
+
       this.containers.set(container.id, containerInfo);
 
       // Start security monitoring for this container
       this.startContainerMonitoring(container.id, containerInfo);
 
       logger.info(`Created secure container ${secureConfig.name} for ${language} execution`);
-      
+
       return {
         containerId: container.id,
         name: secureConfig.name,
@@ -145,6 +204,10 @@ class DockerService {
    * Execute code in a container
    */
   async executeCode(containerId, code, filename = 'main') {
+    if (!this.isAvailable) {
+      throw new Error('Docker is not available');
+    }
+
     try {
       const containerInfo = this.containers.get(containerId);
       if (!containerInfo) {
@@ -152,17 +215,17 @@ class DockerService {
       }
 
       const { container, language } = containerInfo;
-      
+
       // Update activity timestamp
       this.updateContainerActivity(containerId);
-      
+
       // Create the code file in the container
       const codeFile = this.getCodeFilename(filename, language);
       await this.writeFileToContainer(container, codeFile, code);
-      
+
       // Get execution command
       const execCommand = this.getExecutionCommand(language, codeFile);
-      
+
       // Create exec instance with timeout
       const exec = await container.exec({
         Cmd: execCommand,
@@ -173,23 +236,23 @@ class DockerService {
 
       // Start execution and return stream
       const stream = await exec.start({ hijack: true, stdin: false });
-      
+
       // Set execution timeout
       const executionTimeout = setTimeout(() => {
         logger.warn(`Execution timeout for container ${containerId}`);
         stream.destroy();
       }, 30000); // 30 second timeout
-      
+
       // Clear timeout when stream ends
       stream.on('end', () => {
         clearTimeout(executionTimeout);
         this.updateContainerActivity(containerId);
       });
-      
+
       stream.on('error', () => {
         clearTimeout(executionTimeout);
       });
-      
+
       return {
         stream,
         exec,
@@ -207,6 +270,10 @@ class DockerService {
    * Stop and remove a container
    */
   async stopContainer(containerId) {
+    if (!this.isAvailable) {
+      throw new Error('Docker is not available');
+    }
+
     try {
       const containerInfo = this.containers.get(containerId);
       if (!containerInfo) {
@@ -215,12 +282,12 @@ class DockerService {
       }
 
       const { container, name, monitoringInterval } = containerInfo;
-      
+
       // Stop monitoring
       if (monitoringInterval) {
         clearInterval(monitoringInterval);
       }
-      
+
       try {
         await container.stop({ t: 5 }); // 5 second timeout
         logger.info(`Stopped container ${name}`);
@@ -232,7 +299,7 @@ class DockerService {
 
       // Remove from tracking
       this.containers.delete(containerId);
-      
+
     } catch (error) {
       logger.error('Failed to stop container:', error);
       throw new Error(`Container stop failed: ${error.message}`);
@@ -243,6 +310,10 @@ class DockerService {
    * Get container status and info
    */
   async getContainerInfo(containerId) {
+    if (!this.isAvailable) {
+      return null;
+    }
+
     try {
       const containerInfo = this.containers.get(containerId);
       if (!containerInfo) {
@@ -251,7 +322,7 @@ class DockerService {
 
       const { container, language, workspaceId, userId, createdAt, name } = containerInfo;
       const inspect = await container.inspect();
-      
+
       return {
         id: containerId,
         name,
@@ -276,7 +347,7 @@ class DockerService {
    */
   async listWorkspaceContainers(workspaceId) {
     const workspaceContainers = [];
-    
+
     for (const [containerId, info] of this.containers.entries()) {
       if (info.workspaceId === workspaceId) {
         const containerInfo = await this.getContainerInfo(containerId);
@@ -285,7 +356,7 @@ class DockerService {
         }
       }
     }
-    
+
     return workspaceContainers;
   }
 
@@ -298,7 +369,7 @@ class DockerService {
       const monitoringInterval = setInterval(async () => {
         try {
           const metrics = await containerSecurityService.monitorContainer(containerId, containerInfo);
-          
+
           if (metrics && metrics.shouldTerminate) {
             logger.error(`Security violation detected for container ${containerId}. Terminating.`);
             clearInterval(monitoringInterval);
@@ -308,10 +379,10 @@ class DockerService {
           logger.error(`Monitoring failed for container ${containerId}:`, error);
         }
       }, 10000);
-      
+
       // Store monitoring interval for cleanup
       containerInfo.monitoringInterval = monitoringInterval;
-      
+
     } catch (error) {
       logger.error(`Failed to start monitoring for container ${containerId}:`, error);
     }
@@ -331,6 +402,10 @@ class DockerService {
    * Cleanup old containers (called periodically)
    */
   async cleanupContainers() {
+    if (!this.isAvailable) {
+      return;
+    }
+
     // Delegate to the cleanup service
     try {
       await containerCleanupService.performScheduledCleanup();
@@ -382,10 +457,10 @@ class DockerService {
     // Create a tar archive with the file
     const tar = require('tar-stream');
     const pack = tar.pack();
-    
+
     pack.entry({ name: filename }, content);
     pack.finalize();
-    
+
     // Put the archive into the container
     await container.putArchive(pack, { path: '/workspace' });
   }

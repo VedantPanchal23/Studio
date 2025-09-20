@@ -131,3 +131,49 @@
 .dark .login-footer__text {
   color: #9ca3af;
 }
+
+/* Shared auth form styles */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.auth-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.auth-form label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #374151;
+}
+
+.dark .auth-form label {
+  color: #d1d5db;
+}
+
+.auth-form input {
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  background: white;
+  outline: none;
+}
+
+.dark .auth-form input {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+.auth-form input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}

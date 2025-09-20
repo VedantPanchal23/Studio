@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -175,12 +175,12 @@ export class FileAPI {
   static async uploadFiles(workspaceId, files, path = '') {
     try {
       const formData = new FormData();
-      
+
       // Add files to form data
       Array.from(files).forEach(file => {
         formData.append('files', file);
       });
-      
+
       // Add path if specified
       if (path) {
         formData.append('path', path);
@@ -248,7 +248,7 @@ export class FileAPI {
     return files.filter(file => {
       const fileName = caseSensitive ? file.name : file.name.toLowerCase();
       const filePath = caseSensitive ? file.path : file.path.toLowerCase();
-      
+
       // Search in file name and path
       if (fileName.includes(searchQuery) || filePath.includes(searchQuery)) {
         return true;
@@ -296,7 +296,7 @@ export class FileAPI {
       'swift': '🦉',
       'kt': '📱',
       'scala': '📊',
-      
+
       // Web technologies
       'html': '🌐',
       'htm': '🌐',
@@ -304,7 +304,7 @@ export class FileAPI {
       'scss': '🎨',
       'sass': '🎨',
       'less': '🎨',
-      
+
       // Data formats
       'json': '📋',
       'xml': '📄',
@@ -312,14 +312,14 @@ export class FileAPI {
       'yml': '📄',
       'csv': '📊',
       'sql': '🗃️',
-      
+
       // Documentation
       'md': '📝',
       'markdown': '📝',
       'txt': '📄',
       'rtf': '📄',
       'pdf': '📕',
-      
+
       // Scripts
       'sh': '🐚',
       'bash': '🐚',
@@ -328,14 +328,14 @@ export class FileAPI {
       'bat': '⚙️',
       'cmd': '⚙️',
       'ps1': '💙',
-      
+
       // Config files
       'env': '⚙️',
       'config': '⚙️',
       'conf': '⚙️',
       'ini': '⚙️',
       'toml': '⚙️',
-      
+
       // Images
       'jpg': '🖼️',
       'jpeg': '🖼️',
@@ -344,23 +344,23 @@ export class FileAPI {
       'svg': '🎨',
       'ico': '🖼️',
       'bmp': '🖼️',
-      
+
       // Archives
       'zip': '📦',
       'tar': '📦',
       'gz': '📦',
       'rar': '📦',
       '7z': '📦',
-      
+
       // Git
       'gitignore': '🚫',
       'gitattributes': '⚙️',
-      
+
       // Package managers
       'package': '📦',
       'lock': '🔒',
       'yarn': '📦',
-      
+
       // Docker
       'dockerfile': '🐳',
       'dockerignore': '🐳'
@@ -419,11 +419,11 @@ export class FileAPI {
    */
   static formatFileSize(bytes) {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 

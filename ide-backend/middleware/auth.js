@@ -17,10 +17,34 @@ const suspiciousActivity = new Map(); // userId -> { attempts, lastActivity }
  * Enhanced JWT Authentication middleware with security monitoring
  */
 const authenticateJWT = async (req, res, next) => {
+  if (process.env.DISABLE_AUTH === 'true') {
+    try {
+      // Reuse cached dev user in request lifecycle (attach minimal fields)
+      if (!global.__DEV_NOAUTH_USER__) {
+        // Try to find existing stub user or create one
+        let user = await User.findOne({ email: 'dev@local.test' });
+        if (!user) {
+          user = await User.create({
+            email: 'dev@local.test',
+            name: 'Dev User',
+            password: 'development-placeholder',
+            isVerified: true,
+            lastLogin: Date.now()
+          });
+        }
+        global.__DEV_NOAUTH_USER__ = user;
+      }
+      req.user = global.__DEV_NOAUTH_USER__;
+      return next();
+    } catch (e) {
+      logger.error('DISABLE_AUTH user bootstrap failed', { error: e.message });
+      return res.status(500).json({ success: false, message: 'No-auth mode failed to initialize user' });
+    }
+  }
   const clientIP = req.ip;
   const userAgent = req.get('User-Agent');
   const requestId = req.requestId;
-  
+
   try {
     // Check if IP is temporarily blocked
     const ipAttempts = failedAttempts.get(clientIP);
@@ -31,17 +55,17 @@ const authenticateJWT = async (req, res, next) => {
         requestId,
         blockedSince: new Date(ipAttempts.lastAttempt)
       });
-      
+
       return res.status(429).json({
         success: false,
         message: 'Too many failed attempts. Please try again later.',
         code: 'IP_BLOCKED'
       });
     }
-    
+
     const authHeader = req.headers.authorization;
     const token = JWTUtils.extractTokenFromHeader(authHeader);
-    
+
     if (!token) {
       recordFailedAttempt(clientIP, null, 'NO_TOKEN');
       return res.status(401).json({
@@ -49,13 +73,13 @@ const authenticateJWT = async (req, res, next) => {
         message: 'Access token is required'
       });
     }
-    
+
     // Verify token
     const decoded = await JWTUtils.verifyToken(token);
-    
+
     // Find user
     const user = await User.findById(decoded.id).select('-password -driveToken -driveRefreshToken');
-    
+
     if (!user) {
       recordFailedAttempt(clientIP, decoded.id, 'USER_NOT_FOUND');
       return res.status(401).json({
@@ -63,7 +87,7 @@ const authenticateJWT = async (req, res, next) => {
         message: 'User not found'
       });
     }
-    
+
     if (!user.isActive) {
       recordFailedAttempt(clientIP, user._id, 'ACCOUNT_INACTIVE');
       logger.warn('Inactive account attempted access', {
@@ -73,13 +97,13 @@ const authenticateJWT = async (req, res, next) => {
         userAgent,
         requestId
       });
-      
+
       return res.status(401).json({
         success: false,
         message: 'Account is inactive'
       });
     }
-    
+
     // Check if password was changed after token was issued
     if (user.changedPasswordAfter && user.changedPasswordAfter(decoded.iat)) {
       recordFailedAttempt(clientIP, user._id, 'PASSWORD_CHANGED');
@@ -88,7 +112,7 @@ const authenticateJWT = async (req, res, next) => {
         message: 'Password was changed. Please log in again.'
       });
     }
-    
+
     // Check for suspicious activity patterns
     const suspiciousCheck = checkSuspiciousActivity(user._id, clientIP, userAgent);
     if (suspiciousCheck.isSuspicious) {
@@ -100,7 +124,7 @@ const authenticateJWT = async (req, res, next) => {
         requestId,
         reason: suspiciousCheck.reason
       });
-      
+
       // Don't block immediately, but log for monitoring
       if (suspiciousCheck.shouldBlock) {
         return res.status(401).json({
@@ -110,13 +134,13 @@ const authenticateJWT = async (req, res, next) => {
         });
       }
     }
-    
+
     // Clear failed attempts on successful authentication
     failedAttempts.delete(clientIP);
-    
+
     // Update user's last activity
     updateUserActivity(user._id, clientIP, userAgent);
-    
+
     // Attach user and security context to request
     req.user = user;
     req.securityContext = {
@@ -125,7 +149,7 @@ const authenticateJWT = async (req, res, next) => {
       requestId,
       authTime: new Date()
     };
-    
+
     // Log successful authentication
     logger.info('Successful authentication', {
       userId: user._id,
@@ -134,9 +158,9 @@ const authenticateJWT = async (req, res, next) => {
       userAgent,
       requestId
     });
-    
+
     next();
-    
+
   } catch (error) {
     recordFailedAttempt(clientIP, null, 'TOKEN_ERROR');
     logger.error('JWT authentication error:', {
@@ -145,7 +169,7 @@ const authenticateJWT = async (req, res, next) => {
       userAgent,
       requestId
     });
-    
+
     if (error.message === 'Token has expired') {
       return res.status(401).json({
         success: false,
@@ -153,7 +177,7 @@ const authenticateJWT = async (req, res, next) => {
         code: 'TOKEN_EXPIRED'
       });
     }
-    
+
     if (error.message === 'Invalid token') {
       return res.status(401).json({
         success: false,
@@ -161,7 +185,7 @@ const authenticateJWT = async (req, res, next) => {
         code: 'INVALID_TOKEN'
       });
     }
-    
+
     return res.status(401).json({
       success: false,
       message: 'Authentication failed'
@@ -175,10 +199,10 @@ const authenticateJWT = async (req, res, next) => {
 const recordFailedAttempt = (ip, userId, reason) => {
   const now = Date.now();
   const ipAttempts = failedAttempts.get(ip) || { count: 0, lastAttempt: 0, blocked: false };
-  
+
   ipAttempts.count++;
   ipAttempts.lastAttempt = now;
-  
+
   // Block IP after 5 failed attempts
   if (ipAttempts.count >= 5) {
     ipAttempts.blocked = true;
@@ -188,9 +212,9 @@ const recordFailedAttempt = (ip, userId, reason) => {
       reason
     });
   }
-  
+
   failedAttempts.set(ip, ipAttempts);
-  
+
   // Log failed attempt
   logger.warn('Failed authentication attempt', {
     ip,
@@ -210,26 +234,26 @@ const checkSuspiciousActivity = (userId, ip, userAgent) => {
     lastActivity: 0,
     rapidRequests: 0
   };
-  
+
   const now = Date.now();
   let isSuspicious = false;
   let shouldBlock = false;
   const reasons = [];
-  
+
   // Check for multiple IPs
   userActivity.ips.add(ip);
   if (userActivity.ips.size > 3) {
     isSuspicious = true;
     reasons.push('multiple_ips');
   }
-  
+
   // Check for multiple user agents
   userActivity.userAgents.add(userAgent);
   if (userActivity.userAgents.size > 2) {
     isSuspicious = true;
     reasons.push('multiple_user_agents');
   }
-  
+
   // Check for rapid requests (more than 10 per minute)
   if (now - userActivity.lastActivity < 60000) {
     userActivity.rapidRequests++;
@@ -241,10 +265,10 @@ const checkSuspiciousActivity = (userId, ip, userAgent) => {
   } else {
     userActivity.rapidRequests = 0;
   }
-  
+
   userActivity.lastActivity = now;
   suspiciousActivity.set(userId, userActivity);
-  
+
   return {
     isSuspicious,
     shouldBlock,
@@ -262,11 +286,11 @@ const updateUserActivity = (userId, ip, userAgent) => {
     lastActivity: 0,
     rapidRequests: 0
   };
-  
+
   userActivity.ips.add(ip);
   userActivity.userAgents.add(userAgent);
   userActivity.lastActivity = Date.now();
-  
+
   suspiciousActivity.set(userId, userActivity);
 };
 
@@ -278,23 +302,23 @@ const optionalAuthenticateJWT = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     const token = JWTUtils.extractTokenFromHeader(authHeader);
-    
+
     if (!token) {
       return next(); // No token, continue without user
     }
-    
+
     // Verify token
     const decoded = await JWTUtils.verifyToken(token);
-    
+
     // Find user
     const user = await User.findById(decoded.id).select('-password -driveToken -driveRefreshToken');
-    
+
     if (user && user.isActive && !user.changedPasswordAfter(decoded.iat)) {
       req.user = user;
     }
-    
+
     next();
-    
+
   } catch (error) {
     // Log error but continue without user
     logger.warn('Optional JWT authentication failed:', error.message);
@@ -337,7 +361,7 @@ const authorize = (...roles) => {
         message: 'Authentication required'
       });
     }
-    
+
     // For now, we don't have roles in the User model
     // This is a placeholder for future role-based authorization
     if (roles.length > 0 && !roles.includes('user')) {
@@ -346,7 +370,7 @@ const authorize = (...roles) => {
         message: 'Insufficient permissions'
       });
     }
-    
+
     next();
   };
 };
@@ -364,21 +388,21 @@ const checkWorkspaceAccess = (paramName = 'workspaceId') => {
           message: 'Authentication required'
         });
       }
-      
+
       const workspaceId = req.params[paramName];
-      
+
       if (!workspaceId) {
         return res.status(400).json({
           success: false,
           message: 'Workspace ID is required'
         });
       }
-      
+
       // Check if user has access to this workspace
       // This will be implemented when workspace routes are created
       // For now, just continue
       next();
-      
+
     } catch (error) {
       logger.error('Workspace access check error:', error);
       return res.status(500).json({
@@ -413,10 +437,10 @@ const authRateLimit = require('express-rate-limit')({
 const validateRefreshToken = async (req, res, next) => {
   const clientIP = req.ip;
   const userAgent = req.get('User-Agent');
-  
+
   try {
     const { refreshToken } = req.body;
-    
+
     if (!refreshToken) {
       recordFailedAttempt(clientIP, null, 'NO_REFRESH_TOKEN');
       return res.status(400).json({
@@ -424,13 +448,13 @@ const validateRefreshToken = async (req, res, next) => {
         message: 'Refresh token is required'
       });
     }
-    
+
     // Verify refresh token
     const decoded = await JWTUtils.verifyToken(refreshToken);
-    
+
     // Find user
     const user = await User.findById(decoded.id).select('-password -driveToken -driveRefreshToken');
-    
+
     if (!user) {
       recordFailedAttempt(clientIP, decoded.id, 'USER_NOT_FOUND_REFRESH');
       return res.status(401).json({
@@ -438,7 +462,7 @@ const validateRefreshToken = async (req, res, next) => {
         message: 'User not found'
       });
     }
-    
+
     if (!user.isActive) {
       recordFailedAttempt(clientIP, user._id, 'ACCOUNT_INACTIVE_REFRESH');
       return res.status(401).json({
@@ -446,7 +470,7 @@ const validateRefreshToken = async (req, res, next) => {
         message: 'Account is inactive'
       });
     }
-    
+
     // Log refresh token usage
     logger.info('Refresh token used', {
       userId: user._id,
@@ -454,10 +478,10 @@ const validateRefreshToken = async (req, res, next) => {
       ip: clientIP,
       userAgent
     });
-    
+
     req.user = user;
     next();
-    
+
   } catch (error) {
     recordFailedAttempt(clientIP, null, 'REFRESH_TOKEN_ERROR');
     logger.error('Refresh token validation error:', {
@@ -465,7 +489,7 @@ const validateRefreshToken = async (req, res, next) => {
       ip: clientIP,
       userAgent
     });
-    
+
     if (error.message === 'Token has expired') {
       return res.status(401).json({
         success: false,
@@ -473,7 +497,7 @@ const validateRefreshToken = async (req, res, next) => {
         code: 'REFRESH_TOKEN_EXPIRED'
       });
     }
-    
+
     return res.status(401).json({
       success: false,
       message: 'Invalid refresh token'
@@ -491,7 +515,7 @@ const requireAdmin = (req, res, next) => {
       message: 'Authentication required'
     });
   }
-  
+
   // Check if user has admin role (placeholder - implement based on your user model)
   if (!req.user.isAdmin && req.user.role !== 'admin') {
     logger.warn('Non-admin user attempted admin action', {
@@ -500,13 +524,13 @@ const requireAdmin = (req, res, next) => {
       ip: req.ip,
       url: req.originalUrl
     });
-    
+
     return res.status(403).json({
       success: false,
       message: 'Admin access required'
     });
   }
-  
+
   next();
 };
 
@@ -516,8 +540,8 @@ const requireAdmin = (req, res, next) => {
 const sessionSecurity = (req, res, next) => {
   if (req.session) {
     // Regenerate session ID periodically
-    if (!req.session.lastRegeneration || 
-        (Date.now() - req.session.lastRegeneration) > 30 * 60 * 1000) { // 30 minutes
+    if (!req.session.lastRegeneration ||
+      (Date.now() - req.session.lastRegeneration) > 30 * 60 * 1000) { // 30 minutes
       req.session.regenerate((err) => {
         if (err) {
           logger.error('Session regeneration failed:', err);
@@ -539,30 +563,30 @@ const sessionSecurity = (req, res, next) => {
  */
 const validateApiKey = (req, res, next) => {
   const apiKey = req.headers['x-api-key'];
-  
+
   if (!apiKey) {
     return res.status(401).json({
       success: false,
       message: 'API key is required'
     });
   }
-  
+
   // Validate API key (implement your API key validation logic)
   const validApiKeys = process.env.VALID_API_KEYS?.split(',') || [];
-  
+
   if (!validApiKeys.includes(apiKey)) {
     logger.warn('Invalid API key used', {
       ip: req.ip,
       userAgent: req.get('User-Agent'),
       url: req.originalUrl
     });
-    
+
     return res.status(401).json({
       success: false,
       message: 'Invalid API key'
     });
   }
-  
+
   // Mark request as API key authenticated
   req.apiKeyAuth = true;
   next();
@@ -574,14 +598,14 @@ const validateApiKey = (req, res, next) => {
 const cleanupSecurityData = () => {
   const now = Date.now();
   const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-  
+
   // Clean up failed attempts
   for (const [ip, data] of failedAttempts.entries()) {
     if (now - data.lastAttempt > maxAge) {
       failedAttempts.delete(ip);
     }
   }
-  
+
   // Clean up suspicious activity
   for (const [userId, data] of suspiciousActivity.entries()) {
     if (now - data.lastActivity > maxAge) {
@@ -618,24 +642,24 @@ module.exports = {
   passportJWT,
   googleAuth,
   googleCallback,
-  
+
   // Authorization
   authorize,
   requireAdmin,
   checkWorkspaceAccess,
-  
+
   // Token validation
   validateRefreshToken,
   validateApiKey,
-  
+
   // Security
   authRateLimit,
   sessionSecurity,
-  
+
   // Utilities
   getSecurityStats,
   cleanupSecurityData,
-  
+
   // Internal functions (for testing)
   recordFailedAttempt,
   checkSuspiciousActivity,

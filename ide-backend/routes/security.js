@@ -13,6 +13,18 @@ const logger = require('../utils/logger');
  */
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
+    if (!dockerService.isAvailable) {
+      return res.json({
+        success: true,
+        data: {
+          totalContainers: 0,
+          activeContainers: 0,
+          securityViolations: 0,
+          lastScan: null
+        }
+      });
+    }
+
     const stats = dockerService.getSecurityStats();
     res.json({
       success: true,
@@ -32,16 +44,24 @@ router.get('/stats', authenticateToken, async (req, res) => {
  */
 router.get('/container/:containerId/metrics', authenticateToken, async (req, res) => {
   try {
+    if (!dockerService.isAvailable) {
+      return res.status(503).json({
+        success: false,
+        error: 'Service unavailable',
+        message: 'Docker is not running'
+      });
+    }
+
     const { containerId } = req.params;
     const metrics = dockerService.getContainerSecurityMetrics(containerId);
-    
+
     if (!metrics) {
       return res.status(404).json({
         success: false,
         error: 'Container metrics not found'
       });
     }
-    
+
     res.json({
       success: true,
       data: metrics
@@ -60,9 +80,16 @@ router.get('/container/:containerId/metrics', authenticateToken, async (req, res
  */
 router.get('/container/:containerId/violations', authenticateToken, async (req, res) => {
   try {
+    if (!dockerService.isAvailable) {
+      return res.json({
+        success: true,
+        data: { violations: [] }
+      });
+    }
+
     const { containerId } = req.params;
     const violations = dockerService.getContainerSecurityViolations(containerId);
-    
+
     res.json({
       success: true,
       data: violations || { violations: [] }
@@ -83,7 +110,7 @@ router.post('/container/:containerId/cleanup', authenticateToken, async (req, re
   try {
     const { containerId } = req.params;
     const userId = req.user.id;
-    
+
     // Verify user owns the container or is admin
     const containerInfo = await dockerService.getContainerInfo(containerId);
     if (!containerInfo) {
@@ -92,16 +119,16 @@ router.post('/container/:containerId/cleanup', authenticateToken, async (req, re
         error: 'Container not found'
       });
     }
-    
+
     if (containerInfo.userId !== userId && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         error: 'Unauthorized to cleanup this container'
       });
     }
-    
+
     const success = await dockerService.forceCleanupContainer(containerId);
-    
+
     // Log security action
     logger.info(`Container ${containerId} force cleanup by user ${userId}`, {
       userId,
@@ -109,7 +136,7 @@ router.post('/container/:containerId/cleanup', authenticateToken, async (req, re
       action: 'force_cleanup',
       success
     });
-    
+
     res.json({
       success,
       message: success ? 'Container cleaned up successfully' : 'Failed to cleanup container'
@@ -134,17 +161,17 @@ router.put('/config', authenticateToken, async (req, res) => {
         error: 'Admin access required'
       });
     }
-    
+
     const { securityConfig, cleanupConfig } = req.body;
-    
+
     if (securityConfig) {
       containerSecurityService.updateSecurityConfig(securityConfig);
     }
-    
+
     if (cleanupConfig) {
       containerCleanupService.updateConfig(cleanupConfig);
     }
-    
+
     // Log configuration change
     logger.info(`Security configuration updated by admin ${req.user.id}`, {
       userId: req.user.id,
@@ -152,7 +179,7 @@ router.put('/config', authenticateToken, async (req, res) => {
       securityConfig: !!securityConfig,
       cleanupConfig: !!cleanupConfig
     });
-    
+
     res.json({
       success: true,
       message: 'Security configuration updated successfully'
@@ -177,21 +204,21 @@ router.post('/cleanup', authenticateToken, async (req, res) => {
         error: 'Admin access required'
       });
     }
-    
+
     const { emergency = false } = req.body;
-    
+
     if (emergency) {
       await containerCleanupService.performEmergencyCleanup();
     } else {
       await containerCleanupService.performScheduledCleanup();
     }
-    
+
     // Log cleanup action
     logger.info(`Manual cleanup triggered by admin ${req.user.id}`, {
       userId: req.user.id,
       action: emergency ? 'emergency_cleanup' : 'manual_cleanup'
     });
-    
+
     res.json({
       success: true,
       message: `${emergency ? 'Emergency' : 'Manual'} cleanup completed successfully`
@@ -238,9 +265,9 @@ router.get('/audit', authenticateToken, requireAdmin, auditLogger('view_audit_lo
       limit: Math.min(parseInt(req.query.limit) || 100, 1000),
       offset: parseInt(req.query.offset) || 0
     };
-    
+
     const auditLogs = auditService.getLogs(filters);
-    
+
     res.json({
       success: true,
       data: auditLogs
@@ -261,7 +288,7 @@ router.get('/audit/stats', authenticateToken, requireAdmin, async (req, res) => 
   try {
     const timeRange = req.query.timeRange || '24h';
     const stats = auditService.getStatistics(timeRange);
-    
+
     res.json({
       success: true,
       data: stats
@@ -288,14 +315,14 @@ router.get('/audit/export', authenticateToken, requireAdmin, auditLogger('export
       startDate: req.query.startDate,
       endDate: req.query.endDate
     };
-    
+
     const exportData = auditService.exportLogs(format, filters);
-    
+
     const filename = `audit_logs_${new Date().toISOString().split('T')[0]}.${format}`;
-    
+
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', format === 'json' ? 'application/json' : 'text/csv');
-    
+
     res.send(exportData);
   } catch (error) {
     logger.error('Failed to export audit logs:', error);
@@ -312,7 +339,7 @@ router.get('/audit/export', authenticateToken, requireAdmin, auditLogger('export
 router.get('/auth/stats', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const authStats = getSecurityStats();
-    
+
     res.json({
       success: true,
       data: authStats

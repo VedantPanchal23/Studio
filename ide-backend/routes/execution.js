@@ -23,6 +23,13 @@ router.post('/containers', [
     .withMessage('Workspace ID is required')
 ], async (req, res) => {
   try {
+    if (!dockerService.isAvailable) {
+      return res.status(503).json({
+        error: 'Service unavailable',
+        message: 'Code execution is not available: Docker is not running'
+      });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -71,6 +78,13 @@ router.post('/execute', [
     .withMessage('Filename must be a string')
 ], async (req, res) => {
   try {
+    if (!dockerService.isAvailable) {
+      return res.status(503).json({
+        error: 'Service unavailable',
+        message: 'Code execution is not available: Docker is not running'
+      });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -156,7 +170,7 @@ router.get('/containers/:containerId', [
     const userId = req.user.id;
 
     const containerInfo = await dockerService.getContainerInfo(containerId);
-    
+
     if (!containerInfo) {
       return res.status(404).json({
         error: 'Container not found'
@@ -195,6 +209,13 @@ router.delete('/containers/:containerId', [
     .withMessage('Container ID is required')
 ], async (req, res) => {
   try {
+    if (!dockerService.isAvailable) {
+      return res.status(503).json({
+        error: 'Service unavailable',
+        message: 'Docker is not running'
+      });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -253,8 +274,15 @@ router.get('/workspaces/:workspaceId/containers', [
     const { workspaceId } = req.params;
     const userId = req.user.id;
 
+    if (!dockerService.isAvailable) {
+      return res.json({
+        success: true,
+        containers: []
+      });
+    }
+
     const containers = await dockerService.listWorkspaceContainers(workspaceId);
-    
+
     // Filter containers to only show user's containers
     const userContainers = containers.filter(container => container.userId === userId);
 
@@ -279,11 +307,23 @@ router.get('/workspaces/:workspaceId/containers', [
 router.get('/stats', async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
+    if (!dockerService.isAvailable) {
+      return res.json({
+        success: true,
+        stats: {
+          totalContainers: 0,
+          containersByLanguage: {},
+          containersByWorkspace: {},
+          activeContainers: 0
+        }
+      });
+    }
+
     // Get all containers and filter by user
     const allContainers = Array.from(dockerService.containers.values());
     const userContainers = allContainers.filter(container => container.userId === userId);
-    
+
     const stats = {
       totalContainers: userContainers.length,
       containersByLanguage: {},
@@ -293,13 +333,13 @@ router.get('/stats', async (req, res) => {
 
     for (const container of userContainers) {
       // Count by language
-      stats.containersByLanguage[container.language] = 
+      stats.containersByLanguage[container.language] =
         (stats.containersByLanguage[container.language] || 0) + 1;
-      
+
       // Count by workspace
-      stats.containersByWorkspace[container.workspaceId] = 
+      stats.containersByWorkspace[container.workspaceId] =
         (stats.containersByWorkspace[container.workspaceId] || 0) + 1;
-      
+
       // Check if container is still running
       const info = await dockerService.getContainerInfo(container.containerId);
       if (info && info.running) {

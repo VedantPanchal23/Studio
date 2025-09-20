@@ -7,24 +7,24 @@
   --color-danger: #dc3545;
   --color-warning: #ffc107;
   --color-info: #17a2b8;
-  
+
   /* Background Colors */
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #e9ecef;
   --bg-accent: #f0f0f0;
-  
+
   /* Text Colors */
   --text-primary: #212529;
   --text-secondary: #6c757d;
   --text-muted: #868e96;
   --text-inverse: #ffffff;
-  
+
   /* Border Colors */
   --border-primary: #dee2e6;
   --border-secondary: #e9ecef;
   --border-focus: #007acc;
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -32,7 +32,7 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
-  
+
   /* Typography */
   --font-family-mono: 'Fira Code', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
   --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
@@ -41,29 +41,29 @@
   --font-size-base: 1rem;
   --font-size-lg: 1.125rem;
   --font-size-xl: 1.25rem;
-  
+
   /* Line Heights */
   --line-height-tight: 1.25;
   --line-height-normal: 1.5;
   --line-height-relaxed: 1.75;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
-  
+
   /* Border Radius */
   --radius-sm: 0.125rem;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
-  
+
   /* Transitions */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
-  
+
   /* Z-Index */
   --z-dropdown: 1000;
   --z-sticky: 1020;
@@ -72,6 +72,17 @@
   --z-modal: 1050;
   --z-popover: 1060;
   --z-tooltip: 1070;
+
+  /* VSCode-specific variables */
+  --vscode-activity-bar-width: 48px;
+  --vscode-activity-bar-icon-size: 24px;
+  --vscode-sidebar-min-width: 200px;
+  --vscode-sidebar-default-width: 320px;
+  --vscode-tab-height: 35px;
+  --vscode-statusbar-height: 22px;
+  --vscode-panel-min-height: 100px;
+  --vscode-panel-default-height: 250px;
+  --vscode-scrollbar-width: 14px;
 }
 
 /* Dark Theme */
@@ -80,14 +91,38 @@
   --bg-secondary: #252526;
   --bg-tertiary: #2d2d30;
   --bg-accent: #383838;
-  
+
   --text-primary: #cccccc;
   --text-secondary: #969696;
   --text-muted: #6a6a6a;
-  
+
   --border-primary: #3e3e42;
   --border-secondary: #2d2d30;
-  
+
+  /* VSCode Dark Theme Colors */
+  --vscode-foreground: #cccccc;
+  --vscode-background: #1e1e1e;
+  --vscode-sidebar-background: #252526;
+  --vscode-activity-bar-background: #333333;
+  --vscode-editor-background: #1e1e1e;
+  --vscode-tab-active-background: #1e1e1e;
+  --vscode-tab-inactive-background: #2d2d30;
+  --vscode-tab-border: #252526;
+  --vscode-panel-background: #252526;
+  --vscode-terminal-background: #0c0c0c;
+  --vscode-statusbar-background: #007acc;
+  --vscode-border: #3e3e42;
+  --vscode-button-hover: #094771;
+  --vscode-accent: #007acc;
+  --vscode-selection: #264f78;
+  --vscode-highlight: #094771;
+  --vscode-warning: #ffcc02;
+  --vscode-error: #f44747;
+  --vscode-success: #4ec9b0;
+  --vscode-scrollbar-background: transparent;
+  --vscode-scrollbar-thumb: #424242;
+  --vscode-scrollbar-thumb-hover: #4f4f4f;
+
   /* Adjust shadows for dark theme */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);

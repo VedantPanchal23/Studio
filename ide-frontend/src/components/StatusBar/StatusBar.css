@@ -1,0 +1,82 @@
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--vscode-statusbar-height);
+    background-color: var(--vscode-statusbar-background);
+    color: white;
+    font-size: 12px;
+    padding: 0 16px;
+    border-top: 1px solid var(--vscode-border);
+    user-select: none;
+}
+
+.status-bar__left,
+.status-bar__center,
+.status-bar__right {
+    display: flex;
+    align-items: center;
+}
+
+.status-bar__left {
+    flex: 1;
+}
+
+.status-bar__center {
+    flex: 0;
+}
+
+.status-bar__right {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.status-bar__item {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+    border-radius: 3px;
+    margin: 0 2px;
+}
+
+.status-bar__item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-bar__item span {
+    margin-left: 4px;
+}
+
+.status-bar__item svg {
+    opacity: 0.8;
+}
+
+.status-bar__problems {
+    color: #ffcc02;
+}
+
+.status-bar__language {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-bar__language:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .status-bar {
+        font-size: 11px;
+        padding: 0 8px;
+    }
+
+    .status-bar__item {
+        padding: 2px 4px;
+    }
+
+    .status-bar__item span {
+        margin-left: 2px;
+    }
+}

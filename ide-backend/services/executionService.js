@@ -13,8 +13,12 @@ class ExecutionService {
    */
   async startExecution(socket, { containerId, code, filename = 'main', executionId = null }) {
     const execId = executionId || crypto.randomUUID();
-    
+
     try {
+      if (!dockerService.isAvailable) {
+        throw new Error('Code execution is not available: Docker is not running');
+      }
+
       logger.info(`Starting execution ${execId} in container ${containerId}`);
 
       // Verify container exists and get info
@@ -25,7 +29,7 @@ class ExecutionService {
 
       // Start execution
       const execution = await dockerService.executeCode(containerId, code, filename);
-      
+
       // Track execution
       const executionData = {
         id: execId,
@@ -39,7 +43,7 @@ class ExecutionService {
         error: null,
         socket
       };
-      
+
       this.activeExecutions.set(execId, executionData);
 
       // Emit execution started event
@@ -54,7 +58,7 @@ class ExecutionService {
       execution.stream.on('data', (chunk) => {
         const output = chunk.toString();
         executionData.output += output;
-        
+
         socket.emit('execution:output', {
           executionId: execId,
           output,
@@ -66,11 +70,11 @@ class ExecutionService {
         executionData.status = 'completed';
         executionData.endTime = new Date();
         executionData.duration = executionData.endTime - executionData.startTime;
-        
+
         // Move to history
         this.executionHistory.set(execId, { ...executionData });
         this.activeExecutions.delete(execId);
-        
+
         socket.emit('execution:completed', {
           executionId: execId,
           status: 'completed',
@@ -78,7 +82,7 @@ class ExecutionService {
           duration: executionData.duration,
           output: executionData.output
         });
-        
+
         logger.info(`Execution ${execId} completed in ${executionData.duration}ms`);
       });
 
@@ -87,18 +91,18 @@ class ExecutionService {
         executionData.error = error.message;
         executionData.endTime = new Date();
         executionData.duration = executionData.endTime - executionData.startTime;
-        
+
         // Move to history
         this.executionHistory.set(execId, { ...executionData });
         this.activeExecutions.delete(execId);
-        
+
         socket.emit('execution:error', {
           executionId: execId,
           error: error.message,
           endTime: executionData.endTime,
           duration: executionData.duration
         });
-        
+
         logger.error(`Execution ${execId} failed:`, error);
       });
 
@@ -111,13 +115,13 @@ class ExecutionService {
 
     } catch (error) {
       logger.error('Failed to start execution:', error);
-      
+
       socket.emit('execution:error', {
         executionId: execId,
         error: error.message,
         timestamp: new Date()
       });
-      
+
       throw error;
     }
   }
@@ -135,20 +139,20 @@ class ExecutionService {
       execution.status = 'stopped';
       execution.endTime = new Date();
       execution.duration = execution.endTime - execution.startTime;
-      
+
       // Move to history
       this.executionHistory.set(executionId, { ...execution });
       this.activeExecutions.delete(executionId);
-      
+
       execution.socket.emit('execution:stopped', {
         executionId,
         endTime: execution.endTime,
         duration: execution.duration
       });
-      
+
       logger.info(`Execution ${executionId} stopped`);
       return true;
-      
+
     } catch (error) {
       logger.error(`Failed to stop execution ${executionId}:`, error);
       return false;
@@ -194,7 +198,7 @@ class ExecutionService {
    */
   getUserExecutions(userId) {
     const userExecutions = [];
-    
+
     // Add active executions
     for (const execution of this.activeExecutions.values()) {
       if (execution.socket.userId === userId) {
@@ -207,7 +211,7 @@ class ExecutionService {
         });
       }
     }
-    
+
     // Add historical executions
     for (const execution of this.executionHistory.values()) {
       if (execution.socket.userId === userId) {
@@ -223,7 +227,7 @@ class ExecutionService {
         });
       }
     }
-    
+
     return userExecutions.sort((a, b) => b.startTime - a.startTime);
   }
 
@@ -233,13 +237,13 @@ class ExecutionService {
   cleanupHistory() {
     const maxAge = 24 * 60 * 60 * 1000; // 24 hours
     const now = new Date();
-    
+
     for (const [execId, execution] of this.executionHistory.entries()) {
       if (execution.endTime && (now - execution.endTime) > maxAge) {
         this.executionHistory.delete(execId);
       }
     }
-    
+
     logger.info(`Cleaned up old execution history. Remaining: ${this.executionHistory.size}`);
   }
 

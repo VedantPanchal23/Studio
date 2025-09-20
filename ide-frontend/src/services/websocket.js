@@ -15,8 +15,8 @@ class WebSocketService {
     }
 
     // Get backend URL from environment or default to localhost
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
-    
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3002'
+
     this.socket = io(backendUrl, {
       transports: ['websocket', 'polling'],
       timeout: 20000,

@@ -11,20 +11,24 @@ import './ProtectedRoute.css';
 const ProtectedRoute = ({ children, requireAuth = true }) => {
   const location = useLocation();
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  const { 
-    isAuthenticated, 
-    isLoading, 
+
+  const {
+    isAuthenticated,
+    isLoading,
     initializeAuth,
-    ensureValidToken 
+    ensureValidToken
   } = useAuthStore();
 
   useEffect(() => {
+    if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
+      setIsInitialized(true);
+      return;
+    }
     const initialize = async () => {
       try {
         // Initialize auth state from cookies/storage
         await initializeAuth();
-        
+
         // If authenticated, ensure token is still valid
         if (isAuthenticated) {
           await ensureValidToken();
@@ -43,6 +47,10 @@ const ProtectedRoute = ({ children, requireAuth = true }) => {
   }, [initializeAuth, ensureValidToken, isAuthenticated, isInitialized]);
 
   // Show loading spinner while initializing
+  if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
+    return children; // Direct render in disabled mode
+  }
+
   if (!isInitialized || isLoading) {
     return (
       <div className="protected-loading">
@@ -60,10 +68,10 @@ const ProtectedRoute = ({ children, requireAuth = true }) => {
   if (requireAuth && !isAuthenticated) {
     // Save the attempted location for redirect after login
     return (
-      <Navigate 
-        to="/login" 
-        state={{ from: location }} 
-        replace 
+      <Navigate
+        to="/login"
+        state={{ from: location }}
+        replace
       />
     );
   }
@@ -76,6 +84,7 @@ const ProtectedRoute = ({ children, requireAuth = true }) => {
  * Public route wrapper - redirects authenticated users away from auth pages
  */
 export const PublicRoute = ({ children, redirectTo = '/ide' }) => {
+  if (import.meta.env.VITE_DISABLE_AUTH === 'true') return children;
   const { isAuthenticated, isLoading } = useAuthStore();
 
   // Show loading spinner while checking auth

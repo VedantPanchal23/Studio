@@ -8,14 +8,27 @@ const config = {
   // Server configuration
   port: process.env.PORT || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',
-  
+
   // CORS configuration
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+        .split(',')
+        .map(o => o.trim());
+      if (!origin) return callback(null, true); // non-browser or same-origin
+      if (allowed.includes(origin)) {
+        return callback(null, true);
+      }
+      // In development, optionally allow any localhost port if DEV_ALLOW_ALL_LOCALHOST=true
+      if (process.env.DEV_ALLOW_ALL_LOCALHOST === 'true' && /^http:\/\/localhost:\d+$/.test(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error(`CORS: Origin ${origin} not allowed`));
+    },
     credentials: true,
     optionsSuccessStatus: 200
   },
-  
+
   // Rate limiting configuration
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
@@ -24,7 +37,7 @@ const config = {
     standardHeaders: true,
     legacyHeaders: false
   },
-  
+
   // Security configuration
   security: {
     helmet: {
@@ -44,7 +57,7 @@ const config = {
       crossOriginEmbedderPolicy: false
     }
   },
-  
+
   // Request body limits
   bodyParser: {
     json: {
@@ -55,7 +68,7 @@ const config = {
       extended: true
     }
   },
-  
+
   // Database configuration (placeholders for future use)
   database: {
     mongodb: {
@@ -75,7 +88,7 @@ const config = {
       }
     }
   },
-  
+
   // JWT configuration
   jwt: {
     secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
@@ -103,7 +116,7 @@ const config = {
       callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3001/api/auth/google/callback'
     }
   },
-  
+
   // Logging configuration
   logging: {
     level: process.env.LOG_LEVEL || 'info',
@@ -124,9 +137,9 @@ if (config.nodeEnv === 'production') {
     'MONGODB_URI',
     'REDIS_URL'
   ];
-  
+
   const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-  
+
   if (missingEnvVars.length > 0) {
     throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
   }

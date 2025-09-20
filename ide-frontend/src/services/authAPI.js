@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3002',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ api.interceptors.request.use(
       ...config.params,
       _t: Date.now()
     };
-    
+
     return config;
   },
   (error) => {
@@ -161,7 +161,35 @@ export const authAPI = {
    * @returns {string} Google OAuth URL
    */
   getGoogleAuthUrl: () => {
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google`;
+    return `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}/api/auth/google`;
+  },
+
+  /**
+   * Email/password signup
+   * @param {Object} data { name, email, password }
+   */
+  signup: async (data) => {
+    try {
+      const response = await api.post('/api/auth/signup', data);
+      return response;
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Email/password login
+   * @param {Object} data { email, password }
+   */
+  login: async (data) => {
+    try {
+      const response = await api.post('/api/auth/login', data);
+      return response;
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
   }
 };
 

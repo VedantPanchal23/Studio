@@ -1,0 +1,133 @@
+.editor-area {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--vscode-editor-background);
+}
+
+.editor-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--vscode-foreground);
+    text-align: center;
+}
+
+.editor-welcome h2 {
+    font-size: 24px;
+    font-weight: 300;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.editor-welcome p {
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+.editor-tabs {
+    display: flex;
+    background-color: var(--vscode-tab-inactive-background);
+    border-bottom: 1px solid var(--vscode-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.editor-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.editor-tab {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--vscode-tab-inactive-background);
+    border-right: 1px solid var(--vscode-tab-border);
+    cursor: pointer;
+    user-select: none;
+    min-width: 120px;
+    max-width: 200px;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.editor-tab:hover {
+    background-color: var(--vscode-highlight);
+}
+
+.editor-tab--active {
+    background-color: var(--vscode-tab-active-background);
+    border-bottom: 1px solid var(--vscode-tab-active-background);
+}
+
+.editor-tab__icon {
+    margin-right: 8px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.editor-tab__title {
+    flex: 1;
+    font-size: 13px;
+    color: var(--vscode-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 8px;
+}
+
+.editor-tab__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: none;
+    border: none;
+    color: var(--vscode-foreground);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: all var(--transition-fast);
+    border-radius: 3px;
+}
+
+.editor-tab__close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+.editor-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Scrollbar styling for tabs */
+.editor-tabs {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vscode-scrollbar-thumb) var(--vscode-scrollbar-background);
+}
+
+.editor-tabs::-webkit-scrollbar {
+    height: 6px;
+}
+
+.editor-tabs::-webkit-scrollbar-track {
+    background: var(--vscode-scrollbar-background);
+}
+
+.editor-tabs::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbar-thumb);
+    border-radius: 3px;
+}
+
+.editor-tabs::-webkit-scrollbar-thumb:hover {
+    background-color: var(--vscode-scrollbar-thumb-hover);
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .editor-tab__close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
