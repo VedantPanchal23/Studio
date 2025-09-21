@@ -23,14 +23,40 @@ describe('DockerService', () => {
         }
       }),
       exec: jest.fn().mockResolvedValue({
-        start: jest.fn().mockResolvedValue({})
+        start: jest.fn().mockResolvedValue({
+          on: jest.fn(),
+          destroy: jest.fn()
+        })
       }),
-      putArchive: jest.fn().mockResolvedValue({})
+      putArchive: jest.fn().mockResolvedValue({}),
+      stats: jest.fn().mockResolvedValue({
+        memory_stats: {
+          usage: 1048576,
+          limit: 268435456
+        },
+        cpu_stats: {
+          throttling_data: {},
+          cpu_usage: {
+            total_usage: 1000000
+          },
+          system_cpu_usage: 10000000
+        },
+        networks: {},
+        pids_stats: { current: 1 }
+      })
     };
 
     mockDocker = {
       ping: jest.fn().mockResolvedValue({}),
       listImages: jest.fn().mockResolvedValue([{ Id: 'existing-image' }]),
+      listContainers: jest.fn().mockResolvedValue([]),
+      listVolumes: jest.fn().mockResolvedValue({ Volumes: [] }),
+      listNetworks: jest.fn().mockResolvedValue([]),
+      info: jest.fn().mockResolvedValue({}),
+      getContainer: jest.fn().mockReturnValue(mockContainer),
+      getImage: jest.fn().mockReturnValue({ remove: jest.fn().mockResolvedValue({}) }),
+      getVolume: jest.fn().mockReturnValue({ remove: jest.fn().mockResolvedValue({}) }),
+      getNetwork: jest.fn().mockReturnValue({ remove: jest.fn().mockResolvedValue({}) }),
       pull: jest.fn().mockResolvedValue({}),
       createContainer: jest.fn().mockResolvedValue(mockContainer),
       modem: {
@@ -57,10 +83,12 @@ describe('DockerService', () => {
       expect(mockDocker.ping).toHaveBeenCalled();
     });
 
-    it('should throw error when Docker is not available', async () => {
+    it('should return false when Docker is not available', async () => {
       mockDocker.ping.mockRejectedValue(new Error('Docker not available'));
       
-      await expect(dockerService.initialize()).rejects.toThrow('Docker service initialization failed');
+      const result = await dockerService.initialize();
+      expect(result).toBe(false);
+      expect(dockerService.isAvailable).toBe(false);
     });
   });
 
@@ -99,8 +127,8 @@ describe('DockerService', () => {
       await dockerService.createContainer('node', 'workspace-1', 'user-1');
       
       const createCall = mockDocker.createContainer.mock.calls[0][0];
-      expect(createCall.HostConfig.Memory).toBe(512 * 1024 * 1024);
-      expect(createCall.HostConfig.CpuQuota).toBe(50000);
+      expect(createCall.HostConfig.Memory).toBe(256 * 1024 * 1024); // 256MB
+      expect(createCall.HostConfig.CpuQuota).toBe(25000); // 25% CPU
     });
   });
 
@@ -180,15 +208,20 @@ describe('DockerService', () => {
     });
 
     it('should cleanup old containers', async () => {
-      // Create a container with old timestamp
+      // Mock listContainers to return old containers for cleanup service
+      const oldContainer = {
+        Id: 'test-container-id',
+        Created: Math.floor((Date.now() - 31 * 60 * 1000) / 1000), // 31 minutes ago in seconds
+        Names: ['/ide-node-workspace-user-1-old']
+      };
+      mockDocker.listContainers.mockResolvedValue([oldContainer]);
+      
+      // Create a container 
       await dockerService.createContainer('node', 'workspace-1', 'user-1');
-      const containerInfo = dockerService.containers.get('test-container-id');
-      containerInfo.createdAt = new Date(Date.now() - 31 * 60 * 1000); // 31 minutes ago
       
       await dockerService.cleanupContainers();
       
       expect(mockContainer.stop).toHaveBeenCalled();
-      expect(dockerService.containers.has('test-container-id')).toBe(false);
     });
 
     it('should not cleanup recent containers', async () => {

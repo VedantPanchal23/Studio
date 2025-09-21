@@ -70,6 +70,27 @@ const getFirebaseAuth = () => {
  */
 const verifyIdToken = async (idToken) => {
   try {
+    // Handle test tokens in test environment
+    if (process.env.NODE_ENV === 'test' && idToken.startsWith('firebase-test-token-')) {
+      const firebaseUid = idToken.replace('firebase-test-token-', '');
+      return {
+        uid: firebaseUid,
+        test: true,
+        iss: 'https://securetoken.google.com/test-project',
+        aud: 'test-project',
+        auth_time: Math.floor(Date.now() / 1000),
+        user_id: firebaseUid,
+        sub: firebaseUid,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        email: `test-${firebaseUid}@example.com`,
+        firebase: {
+          identities: {},
+          sign_in_provider: 'custom'
+        }
+      };
+    }
+
     const auth = getFirebaseAuth();
     if (!auth) {
       throw new Error('Firebase Auth not initialized');

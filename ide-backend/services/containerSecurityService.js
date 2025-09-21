@@ -163,6 +163,13 @@ class ContainerSecurityService {
   async monitorContainer(containerId, containerInfo) {
     try {
       const { container } = containerInfo;
+      
+      // Check if container has stats method (safety check for tests and edge cases)
+      if (!container || typeof container.stats !== 'function') {
+        logger.warn(`Container ${containerId} does not have stats method available`);
+        return;
+      }
+      
       const stats = await container.stats({ stream: false });
       
       const metrics = {

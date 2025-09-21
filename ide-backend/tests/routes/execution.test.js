@@ -20,11 +20,10 @@ describe('Execution Routes', () => {
 
     authToken = 'firebase-test-token-test-firebase-uid';
     
-    // Mock Firebase Admin Auth
-    const mockAuth = {
+    // Mock Firebase Admin Auth - admin is an object with an auth property
+    admin.auth = jest.fn().mockReturnValue({
       verifyIdToken: jest.fn().mockResolvedValue(mockUser)
-    };
-    admin.auth.mockReturnValue(mockAuth);
+    });
 
     jest.clearAllMocks();
   });
