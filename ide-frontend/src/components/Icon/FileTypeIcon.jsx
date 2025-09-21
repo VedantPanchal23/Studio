@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { getFileTypeIcon, getFileTypeIconName, getFileTypeColor, getFolderIcon } from './fileTypeIcons';
+import { getFileTypeIconName, getFileTypeColor, getFolderIcon } from './fileTypeIcons';
 import { useIconContext } from './IconProvider';
 import Icon from './Icon';
 import styles from './Icon.module.css';

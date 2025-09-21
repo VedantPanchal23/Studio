@@ -1,5 +1,5 @@
 const webSocketService = require('../services/websocket');
-const JWTUtils = require('../utils/jwt');
+const firebaseTestAuth = require('./utils/firebaseTestAuth');
 
 describe('WebSocket Service', () => {
   describe('Service Initialization', () => {
@@ -29,25 +29,26 @@ describe('WebSocket Service', () => {
     });
   });
 
-  describe('JWT Token Handling', () => {
-    test('should generate valid JWT token', () => {
-      const payload = { id: 'test-user-id' };
-      const token = JWTUtils.generateAccessToken(payload);
+  describe('Firebase Token Handling', () => {
+    test('should generate valid Firebase test token', () => {
+      const payload = { uid: 'test-firebase-uid' };
+      const token = firebaseTestAuth.generateMockIdToken(payload);
       
       expect(typeof token).toBe('string');
-      expect(token.split('.')).toHaveLength(3); // JWT has 3 parts
+      expect(token.startsWith('firebase-test-token-')).toBe(true);
     });
 
-    test('should verify valid JWT token', async () => {
-      const payload = { id: 'test-user-id' };
-      const token = JWTUtils.generateAccessToken(payload);
+    test('should verify valid Firebase test token', () => {
+      const payload = { uid: 'test-firebase-uid' };
+      const token = firebaseTestAuth.generateMockIdToken(payload);
       
-      const decoded = await JWTUtils.verifyToken(token);
-      expect(decoded.id).toBe(payload.id);
+      const decoded = firebaseTestAuth.mockVerifyIdToken(token);
+      expect(decoded.uid).toBe(payload.uid);
+      expect(decoded.test).toBe(true);
     });
 
-    test('should reject invalid JWT token', async () => {
-      await expect(JWTUtils.verifyToken('invalid-token')).rejects.toThrow('Invalid token');
+    test('should reject invalid Firebase token', () => {
+      expect(() => firebaseTestAuth.mockVerifyIdToken('invalid-token')).toThrow('Invalid test token');
     });
   });
 

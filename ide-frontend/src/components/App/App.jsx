@@ -14,7 +14,7 @@ import './App.css';
 import useAuthStore from '../../stores/authStore';
 
 function App() {
-  const { initializeAuth, isAuthenticated } = useAuthStore();
+  const { initializeAuth } = useAuthStore();
 
   useEffect(() => {
     initializeAuth();

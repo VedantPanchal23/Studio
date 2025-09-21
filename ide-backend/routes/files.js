@@ -3,7 +3,7 @@ const { body, param, query, validationResult } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
 
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 const { Workspace } = require('../models');
 const fileSystem = require('../utils/fileSystem');
 const fileValidation = require('../utils/fileValidation');
@@ -85,7 +85,7 @@ const validateFileContent = [
 
 // GET /api/files/:workspaceId - List files in workspace root
 router.get('/:workspaceId',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   query('path').optional().isString(),
   checkWorkspaceAccess,
@@ -122,7 +122,7 @@ router.get('/:workspaceId',
 
 // GET /api/files/:workspaceId/*filePath - Get file content
 router.get('/:workspaceId/*',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   async (req, res) => {
@@ -188,7 +188,7 @@ router.get('/:workspaceId/*',
 
 // PUT /api/files/:workspaceId/*filePath - Create or update file
 router.put('/:workspaceId/*',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   validateFileContent,
   checkWorkspaceAccess,
@@ -242,7 +242,7 @@ router.put('/:workspaceId/*',
 
 // POST /api/files/:workspaceId/create - Create new file or directory
 router.post('/:workspaceId/create',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('path').isString().notEmpty().withMessage('Path is required'),
   body('type').isIn(['file', 'directory']).withMessage('Type must be file or directory'),
@@ -308,7 +308,7 @@ router.post('/:workspaceId/create',
 
 // DELETE /api/files/:workspaceId/*filePath - Delete file or directory
 router.delete('/:workspaceId/*',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   async (req, res) => {
@@ -365,7 +365,7 @@ router.delete('/:workspaceId/*',
 
 // POST /api/files/:workspaceId/move - Move/rename file or directory
 router.post('/:workspaceId/move',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('from').isString().notEmpty().withMessage('Source path is required'),
   body('to').isString().notEmpty().withMessage('Destination path is required'),
@@ -434,7 +434,7 @@ router.post('/:workspaceId/move',
 
 // POST /api/files/:workspaceId/copy - Copy file or directory
 router.post('/:workspaceId/copy',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('from').isString().notEmpty().withMessage('Source path is required'),
   body('to').isString().notEmpty().withMessage('Destination path is required'),
@@ -501,7 +501,7 @@ router.post('/:workspaceId/copy',
 
 // POST /api/files/:workspaceId/upload - Upload files
 router.post('/:workspaceId/upload',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   upload.array('files', 10),
@@ -585,7 +585,7 @@ router.post('/:workspaceId/upload',
 
 // GET /api/files/:workspaceId/download/*filePath - Download file
 router.get('/:workspaceId/download/*',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   async (req, res) => {

@@ -76,10 +76,6 @@ const GitCommitPanel = () => {
     return commitMessage.trim() && (stagedFiles.length > 0 || amendLastCommit) && !isLoading;
   };
 
-  const getFileIcon = (status) => {
-    return <FileText className="h-3 w-3" />;
-  };
-
   const getStatusBadge = (status) => {
     const statusMap = {
       'modified_staged': { label: 'M', color: 'text-yellow-600' },
@@ -211,7 +207,7 @@ const GitCommitPanel = () => {
                 <div className="space-y-1 p-2">
                   {stagedFiles.map((file) => (
                     <div key={file.path} className="flex items-center gap-2 text-sm">
-                      {getFileIcon(file.status)}
+                      <FileText className="h-3 w-3" />
                       <span className="truncate flex-1" title={file.path}>
                         {file.path}
                       </span>

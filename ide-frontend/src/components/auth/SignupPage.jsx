@@ -27,6 +27,7 @@ const SignupPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLocalError(null);
+        clearError();
         if (!form.name || !form.email || !form.password) {
             setLocalError('All fields are required');
             return;
@@ -38,7 +39,34 @@ const SignupPage = () => {
         const result = await signup(form);
         if (result.success) {
             navigate('/ide');
+        } else {
+            // Handle Firebase-specific error codes
+            const errorMessage = getFirebaseErrorMessage(result.message);
+            setLocalError(errorMessage);
         }
+    };
+
+    const getFirebaseErrorMessage = (errorMessage) => {
+        if (!errorMessage) return 'Signup failed';
+        
+        // Firebase Auth error codes
+        if (errorMessage.includes('auth/email-already-in-use')) {
+            return 'An account with this email already exists';
+        }
+        if (errorMessage.includes('auth/invalid-email')) {
+            return 'Invalid email address';
+        }
+        if (errorMessage.includes('auth/operation-not-allowed')) {
+            return 'Email/password accounts are not enabled';
+        }
+        if (errorMessage.includes('auth/weak-password')) {
+            return 'Password is too weak. Please choose a stronger password';
+        }
+        if (errorMessage.includes('auth/network-request-failed')) {
+            return 'Network error. Please check your connection';
+        }
+        
+        return errorMessage;
     };
 
     return (

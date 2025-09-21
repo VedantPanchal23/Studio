@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Upload, 
   Download, 
@@ -54,7 +54,6 @@ const GitRemotePanel = () => {
   const {
     remotes,
     currentBranch,
-    branches,
     isLoading,
     getRemotes,
     addRemote,
@@ -65,17 +64,17 @@ const GitRemotePanel = () => {
 
   const { currentWorkspace } = useWorkspaceStore();
 
+  const loadRemotes = useCallback(async () => {
+    if (currentWorkspace?.id) {
+      await getRemotes(currentWorkspace.id);
+    }
+  }, [currentWorkspace?.id, getRemotes]);
+
   useEffect(() => {
     if (currentWorkspace?.id) {
       loadRemotes();
     }
-  }, [currentWorkspace?.id]);
-
-  const loadRemotes = async () => {
-    if (currentWorkspace?.id) {
-      await getRemotes(currentWorkspace.id);
-    }
-  };
+  }, [currentWorkspace?.id, loadRemotes]);
 
   const handleAddRemote = async () => {
     if (!remoteName.trim() || !remoteUrl.trim() || !currentWorkspace?.id) return;

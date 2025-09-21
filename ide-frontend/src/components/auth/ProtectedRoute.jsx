@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../stores/authStore';
 import { Loader2 } from 'lucide-react';
@@ -10,48 +10,31 @@ import './ProtectedRoute.css';
  */
 const ProtectedRoute = ({ children, requireAuth = true }) => {
   const location = useLocation();
-  const [isInitialized, setIsInitialized] = useState(false);
 
   const {
     isAuthenticated,
     isLoading,
-    initializeAuth,
-    ensureValidToken
+    authInitialized,
+    initializeAuth
   } = useAuthStore();
 
   useEffect(() => {
     if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
-      setIsInitialized(true);
       return;
     }
-    const initialize = async () => {
-      try {
-        // Initialize auth state from cookies/storage
-        await initializeAuth();
-
-        // If authenticated, ensure token is still valid
-        if (isAuthenticated) {
-          await ensureValidToken();
-        }
-      } catch (error) {
-        console.error('Auth initialization failed:', error);
-        // Error handling is done in the store
-      } finally {
-        setIsInitialized(true);
-      }
-    };
-
-    if (!isInitialized) {
-      initialize();
+    
+    // Initialize auth state if not already initialized
+    if (!authInitialized) {
+      initializeAuth();
     }
-  }, [initializeAuth, ensureValidToken, isAuthenticated, isInitialized]);
+  }, [initializeAuth, authInitialized]);
 
   // Show loading spinner while initializing
   if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
     return children; // Direct render in disabled mode
   }
 
-  if (!isInitialized || isLoading) {
+  if (!authInitialized || isLoading) {
     return (
       <div className="protected-loading">
         <div className="protected-loading__content">
@@ -84,11 +67,12 @@ const ProtectedRoute = ({ children, requireAuth = true }) => {
  * Public route wrapper - redirects authenticated users away from auth pages
  */
 export const PublicRoute = ({ children, redirectTo = '/ide' }) => {
+  const { isAuthenticated, isLoading, authInitialized } = useAuthStore();
+  
   if (import.meta.env.VITE_DISABLE_AUTH === 'true') return children;
-  const { isAuthenticated, isLoading } = useAuthStore();
 
   // Show loading spinner while checking auth
-  if (isLoading) {
+  if (!authInitialized || isLoading) {
     return (
       <div className="protected-loading">
         <div className="protected-loading__content">

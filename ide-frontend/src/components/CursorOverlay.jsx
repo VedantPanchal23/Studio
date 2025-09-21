@@ -13,7 +13,6 @@ const CursorOverlay = ({ cursors, editorRef, monacoRef }) => {
     }
 
     const editor = editorRef.current
-    const monaco = monacoRef.current
 
     // Calculate cursor positions
     const newCursorElements = cursors.map(cursor => {
@@ -74,7 +73,7 @@ const CursorOverlay = ({ cursors, editorRef, monacoRef }) => {
             line: cursor.line,
             column: cursor.column
           }
-        } catch (error) {
+        } catch {
           return null
         }
       }).filter(Boolean)

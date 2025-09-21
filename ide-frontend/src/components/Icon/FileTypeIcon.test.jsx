@@ -46,13 +46,13 @@ describe('FileTypeIcon Component', () => {
   it('uses currentColor when useColor is false', () => {
     render(<FileTypeIcon filename="style.css" useColor={false} />);
     const icon = screen.getByTestId('file-icon-style.css-file');
-    expect(icon).toHaveAttribute('color', 'currentColor');
+    expect(icon).toHaveAttribute('stroke', 'currentColor');
   });
 
   it('allows color override', () => {
     render(<FileTypeIcon filename="test.js" color="#ff0000" />);
     const icon = screen.getByTestId('file-icon-test.js-file');
-    expect(icon).toHaveAttribute('color', '#ff0000');
+    expect(icon).toHaveAttribute('stroke', '#ff0000');
   });
 
   it('handles files without extensions', () => {

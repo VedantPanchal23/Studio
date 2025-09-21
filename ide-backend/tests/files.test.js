@@ -2,7 +2,7 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { User, Workspace } = require('../models');
-const JWTUtils = require('../utils/jwt');
+const firebaseTestAuth = require('./utils/firebaseTestAuth');
 const fileSystem = require('../utils/fileSystem');
 
 // Create app without starting server
@@ -92,7 +92,7 @@ describe('File Operations API', () => {
     
     // Create test user
     testUser = await User.create({
-      googleId: 'test-google-id',
+      firebaseUid: 'test-firebase-uid',
       email: 'test@example.com',
       name: 'Test User',
       avatar: 'https://example.com/avatar.jpg'
@@ -105,8 +105,8 @@ describe('File Operations API', () => {
       files: []
     });
     
-    // Generate auth token
-    authToken = JWTUtils.generateAccessToken({ id: testUser._id });
+    // Generate Firebase auth token
+    authToken = firebaseTestAuth.generateMockIdToken({ uid: 'test-firebase-uid' });
     
     // Create workspace directory
     await fileSystem.createWorkspaceDirectory(testWorkspace._id);
@@ -439,13 +439,13 @@ describe('File Operations API', () => {
     beforeEach(async () => {
       // Create another user
       otherUser = await User.create({
-        googleId: 'other-google-id',
+        firebaseUid: 'other-firebase-uid',
         email: 'other@example.com',
         name: 'Other User',
         avatar: 'https://example.com/other-avatar.jpg'
       });
 
-      otherUserToken = await JWTUtils.generateToken(otherUser._id);
+      otherUserToken = firebaseTestAuth.generateMockIdToken({ uid: 'other-firebase-uid' });
     });
 
     it('should deny access to workspace owned by another user', async () => {

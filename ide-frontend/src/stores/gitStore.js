@@ -359,7 +359,7 @@ const useGitStore = create(
           } else {
             set({ githubUser: null });
           }
-        } catch (error) {
+        } catch {
           set({ githubUser: null });
         }
       },

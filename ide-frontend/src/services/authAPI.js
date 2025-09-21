@@ -1,4 +1,13 @@
 import axios from 'axios';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut,
+  updateProfile
+} from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -9,14 +18,24 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add Firebase ID token
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Add timestamp to prevent caching
     config.params = {
       ...config.params,
       _t: Date.now()
     };
+
+    // Add Firebase ID token to requests
+    if (auth.currentUser) {
+      try {
+        const idToken = await auth.currentUser.getIdToken();
+        config.headers.Authorization = `Bearer ${idToken}`;
+      } catch (error) {
+        console.error('Failed to get Firebase ID token:', error);
+      }
+    }
 
     return config;
   },
@@ -59,137 +78,232 @@ api.interceptors.response.use(
 );
 
 /**
- * Authentication API service
+ * Firebase Authentication API service
  */
 export const authAPI = {
   /**
-   * Verify JWT token
-   * @param {string} token - Access token to verify
-   * @returns {Promise<Object>} API response
+   * Sign up with email and password using Firebase
+   * @param {Object} data { name, email, password }
+   * @returns {Promise<Object>} Firebase user and custom token
    */
-  verifyToken: async (token) => {
+  signup: async (data) => {
     try {
-      const response = await api.get('/api/auth/verify-token', {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const { name, email, password } = data;
+      
+      // Create user with Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Update user profile with name
+      await updateProfile(user, {
+        displayName: name
+      });
+      
+      // Get ID token for backend communication
+      const idToken = await user.getIdToken();
+      
+      // Register user with backend
+      const response = await api.post('/api/auth/firebase/register', {
+        idToken,
+        userData: {
+          name,
+          email,
+          photoURL: user.photoURL
         }
       });
-      return response;
+      
+      return {
+        success: true,
+        data: {
+          user: response.data.user,
+          firebaseUser: user
+        }
+      };
     } catch (error) {
-      console.error('Token verification failed:', error);
-      throw error;
+      console.error('Firebase signup failed:', error);
+      throw {
+        message: error.message || 'Signup failed',
+        code: error.code || 'SIGNUP_ERROR'
+      };
     }
   },
 
   /**
-   * Refresh access token
-   * @param {string} refreshToken - Refresh token
-   * @returns {Promise<Object>} API response with new access token
+   * Sign in with email and password using Firebase
+   * @param {Object} data { email, password }
+   * @returns {Promise<Object>} Firebase user and backend user data
    */
-  refreshToken: async (refreshToken) => {
+  login: async (data) => {
     try {
-      const response = await api.post('/api/auth/refresh', {
-        refreshToken
+      const { email, password } = data;
+      
+      // Sign in with Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Get ID token for backend communication
+      const idToken = await user.getIdToken();
+      
+      // Authenticate with backend
+      const response = await api.post('/api/auth/firebase/login', {
+        idToken
       });
-      return response;
+      
+      return {
+        success: true,
+        data: {
+          user: response.data.user,
+          firebaseUser: user
+        }
+      };
     } catch (error) {
-      console.error('Token refresh failed:', error);
-      throw error;
+      console.error('Firebase login failed:', error);
+      throw {
+        message: error.message || 'Login failed',
+        code: error.code || 'LOGIN_ERROR'
+      };
     }
   },
 
   /**
-   * Get user profile
-   * @param {string} token - Access token
-   * @returns {Promise<Object>} API response with user data
+   * Sign in with Google using Firebase
+   * @returns {Promise<Object>} Firebase user and backend user data
    */
-  getProfile: async (token) => {
+  loginWithGoogle: async () => {
     try {
-      const response = await api.get('/api/auth/profile', {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      
+      // Get ID token for backend communication
+      const idToken = await user.getIdToken();
+      
+      // Authenticate with backend
+      const response = await api.post('/api/auth/firebase/login', {
+        idToken
+      });
+      
+      return {
+        success: true,
+        data: {
+          user: response.data.user,
+          firebaseUser: user
+        }
+      };
+    } catch (error) {
+      console.error('Google login failed:', error);
+      throw {
+        message: error.message || 'Google login failed',
+        code: error.code || 'GOOGLE_LOGIN_ERROR'
+      };
+    }
+  },
+
+  /**
+   * Sign out user from Firebase
+   * @returns {Promise<void>}
+   */
+  logout: async () => {
+    try {
+      await signOut(auth);
+      return { success: true };
+    } catch (error) {
+      console.error('Firebase logout failed:', error);
+      throw {
+        message: error.message || 'Logout failed',
+        code: error.code || 'LOGOUT_ERROR'
+      };
+    }
+  },
+
+  /**
+   * Get current Firebase user and sync with backend
+   * @returns {Promise<Object>} Current user data
+   */
+  getCurrentUser: async () => {
+    try {
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        throw new Error('No authenticated user');
+      }
+      
+      const idToken = await firebaseUser.getIdToken();
+      const response = await api.get('/api/auth/me', {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${idToken}`
         }
       });
-      return response;
+      
+      return {
+        success: true,
+        data: {
+          user: response.data.user,
+          firebaseUser
+        }
+      };
     } catch (error) {
-      console.error('Get profile failed:', error);
-      throw error;
+      console.error('Get current user failed:', error);
+      throw {
+        message: error.message || 'Failed to get user data',
+        code: error.code || 'GET_USER_ERROR'
+      };
     }
   },
 
   /**
    * Update user profile
    * @param {Object} profileData - Profile data to update
-   * @param {string} token - Access token
-   * @returns {Promise<Object>} API response
+   * @returns {Promise<Object>} Updated user data
    */
-  updateProfile: async (profileData, token) => {
+  updateProfile: async (profileData) => {
     try {
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        throw new Error('No authenticated user');
+      }
+      
+      // Update Firebase profile if needed
+      if (profileData.displayName || profileData.photoURL) {
+        await updateProfile(firebaseUser, {
+          displayName: profileData.displayName || firebaseUser.displayName,
+          photoURL: profileData.photoURL || firebaseUser.photoURL
+        });
+      }
+      
+      const idToken = await firebaseUser.getIdToken();
       const response = await api.put('/api/auth/profile', profileData, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${idToken}`
         }
       });
-      return response;
+      
+      return {
+        success: true,
+        data: response.data
+      };
     } catch (error) {
       console.error('Profile update failed:', error);
-      throw error;
+      throw {
+        message: error.message || 'Profile update failed',
+        code: error.code || 'UPDATE_PROFILE_ERROR'
+      };
     }
   },
 
   /**
-   * Logout user
-   * @param {string} token - Access token
-   * @returns {Promise<Object>} API response
+   * Check if user is authenticated
+   * @returns {boolean} True if user is authenticated
    */
-  logout: async (token) => {
-    try {
-      const response = await api.post('/api/auth/logout', {}, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      return response;
-    } catch (error) {
-      console.error('Logout failed:', error);
-      throw error;
-    }
+  isAuthenticated: () => {
+    return !!auth.currentUser;
   },
 
   /**
-   * Initiate Google OAuth login
-   * @returns {string} Google OAuth URL
+   * Get current Firebase user (synchronous)
+   * @returns {Object|null} Current Firebase user or null
    */
-  getGoogleAuthUrl: () => {
-    return `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}/api/auth/google`;
-  },
-
-  /**
-   * Email/password signup
-   * @param {Object} data { name, email, password }
-   */
-  signup: async (data) => {
-    try {
-      const response = await api.post('/api/auth/signup', data);
-      return response;
-    } catch (error) {
-      console.error('Signup failed:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Email/password login
-   * @param {Object} data { email, password }
-   */
-  login: async (data) => {
-    try {
-      const response = await api.post('/api/auth/login', data);
-      return response;
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
-    }
+  getFirebaseUser: () => {
+    return auth.currentUser;
   }
 };
 

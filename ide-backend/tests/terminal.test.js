@@ -1,7 +1,7 @@
 const request = require('supertest');
 const terminalService = require('../services/terminal');
 const User = require('../models/User');
-const JWTUtils = require('../utils/jwt');
+const firebaseTestAuth = require('./utils/firebaseTestAuth');
 const { initializeDatabases, closeDatabases } = require('../utils/database');
 
 describe('Terminal Service', () => {
@@ -12,7 +12,7 @@ describe('Terminal Service', () => {
     await initializeDatabases({ skipRedis: true });
     
     testUser = new User({
-      googleId: 'test-google-id-terminal',
+      firebaseUid: 'test-firebase-uid-terminal',
       email: 'terminal@test.com',
       name: 'Terminal Test User',
       avatar: 'https://example.com/avatar.jpg'
@@ -198,14 +198,14 @@ describe('Terminal API Routes', () => {
     await initializeDatabases({ skipRedis: true });
     
     testUser = new User({
-      googleId: 'test-google-id-terminal-api',
+      firebaseUid: 'test-firebase-uid-terminal-api',
       email: 'terminal-api@test.com',
       name: 'Terminal API Test User',
       avatar: 'https://example.com/avatar.jpg'
     });
     await testUser.save();
 
-    authToken = JWTUtils.generateAccessToken({ id: testUser._id });
+    authToken = firebaseTestAuth.generateMockIdToken({ uid: 'test-firebase-uid-terminal-api' });
     app = require('../server');
   });
 

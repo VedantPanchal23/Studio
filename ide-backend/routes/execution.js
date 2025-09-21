@@ -2,12 +2,12 @@ const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const dockerService = require('../services/dockerService');
 const logger = require('../utils/logger');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 
 const router = express.Router();
 
 // Apply authentication to all execution routes
-router.use(authenticateToken);
+router.use(authenticateFirebase);
 
 /**
  * Create and start a new execution container

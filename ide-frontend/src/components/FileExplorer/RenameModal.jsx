@@ -31,8 +31,9 @@ export function RenameModal({
       return 'Name too long (max 255 characters)'
     }
 
-    // Check for invalid characters
-    const invalidChars = /[<>:"|?*\u0000-\u001f]/
+    // Check for invalid characters - escape control characters properly
+    // eslint-disable-next-line no-control-regex
+    const invalidChars = /[<>:"|?*\u0000-\u001F]/
     if (invalidChars.test(fileName)) {
       return 'Name contains invalid characters'
     }

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { forwardRef, cloneElement, isValidElement } from 'react';
 import styles from './Button.module.css';
 

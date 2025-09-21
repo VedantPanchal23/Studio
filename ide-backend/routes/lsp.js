@@ -3,14 +3,14 @@ const router = express.Router();
 const { body, param, validationResult } = require('express-validator');
 const lspService = require('../services/lspService');
 const logger = require('../utils/logger');
-const { authenticateJWT } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 
 /**
  * @route   GET /api/lsp/languages
  * @desc    Get list of supported programming languages
  * @access  Private
  */
-router.get('/languages', authenticateJWT, async (req, res) => {
+router.get('/languages', authenticateFirebase, async (req, res) => {
   try {
     const languages = lspService.getSupportedLanguages();
     
@@ -41,7 +41,7 @@ router.get('/languages', authenticateJWT, async (req, res) => {
  * @desc    Get list of active LSP servers
  * @access  Private
  */
-router.get('/servers', authenticateJWT, async (req, res) => {
+router.get('/servers', authenticateFirebase, async (req, res) => {
   try {
     const servers = lspService.getActiveServers();
     
@@ -73,7 +73,7 @@ router.get('/servers', authenticateJWT, async (req, res) => {
  * @access  Private
  */
 router.post('/servers', [
-  authenticateJWT,
+  authenticateFirebase,
   body('language')
     .notEmpty()
     .withMessage('Language is required')
@@ -148,7 +148,7 @@ router.post('/servers', [
  * @access  Private
  */
 router.delete('/servers/:serverId', [
-  authenticateJWT,
+  authenticateFirebase,
   param('serverId')
     .notEmpty()
     .withMessage('Server ID is required')
@@ -211,7 +211,7 @@ router.delete('/servers/:serverId', [
  * @access  Private
  */
 router.get('/servers/:serverId/status', [
-  authenticateJWT,
+  authenticateFirebase,
   param('serverId')
     .notEmpty()
     .withMessage('Server ID is required')
@@ -266,7 +266,7 @@ router.get('/servers/:serverId/status', [
  * @access  Private
  */
 router.post('/check-executable', [
-  authenticateJWT,
+  authenticateFirebase,
   body('language')
     .notEmpty()
     .withMessage('Language is required')
@@ -344,7 +344,7 @@ router.post('/check-executable', [
  * @desc    Shutdown all LSP servers
  * @access  Private
  */
-router.post('/shutdown', authenticateJWT, async (req, res) => {
+router.post('/shutdown', authenticateFirebase, async (req, res) => {
   try {
     await lspService.shutdown();
 

@@ -33,7 +33,8 @@ export function CreateItemModal({
     }
 
     // Check for invalid characters
-    const invalidChars = /[<>:"|?*\u0000-\u001f]/
+    // eslint-disable-next-line no-control-regex
+    const invalidChars = /[<>:"|?*\u0000-\u001F]/
     if (invalidChars.test(fileName)) {
       return 'Name contains invalid characters'
     }

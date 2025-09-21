@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateJWT } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 const webSocketService = require('../services/websocket');
 const logger = require('../utils/logger');
 
@@ -9,7 +9,7 @@ const router = express.Router();
  * Get WebSocket connection status
  * GET /api/websocket/status
  */
-router.get('/status', authenticateJWT, (req, res) => {
+router.get('/status', authenticateFirebase, (req, res) => {
   try {
     const connectedUsersCount = webSocketService.getConnectedUsersCount();
     const isUserConnected = webSocketService.isUserConnected(req.user._id.toString());
@@ -37,7 +37,7 @@ router.get('/status', authenticateJWT, (req, res) => {
  * Send test message to user's sockets
  * POST /api/websocket/test
  */
-router.post('/test', authenticateJWT, (req, res) => {
+router.post('/test', authenticateFirebase, (req, res) => {
   try {
     const { message = 'Test message from server' } = req.body;
     const userId = req.user._id.toString();
@@ -65,7 +65,7 @@ router.post('/test', authenticateJWT, (req, res) => {
  * Get connected users (admin only - placeholder)
  * GET /api/websocket/users
  */
-router.get('/users', authenticateJWT, (req, res) => {
+router.get('/users', authenticateFirebase, (req, res) => {
   try {
     // This would typically require admin permissions
     // For now, just return basic stats

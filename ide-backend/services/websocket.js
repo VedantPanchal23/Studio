@@ -1,5 +1,5 @@
 const { Server } = require('socket.io');
-const JWTUtils = require('../utils/jwt');
+const admin = require('firebase-admin');
 const User = require('../models/User');
 const logger = require('../utils/logger');
 const config = require('../config');
@@ -61,16 +61,16 @@ class WebSocketService {
         return next(new Error('Authentication token required'));
       }
 
-      // Verify JWT token
-      const decoded = await JWTUtils.verifyToken(token);
+      // Verify Firebase ID token
+      const decoded = await admin.auth().verifyIdToken(token);
       
-      // Find user
-      const user = await User.findById(decoded.id).select('-password -driveToken -driveRefreshToken');
+      // Find user by Firebase UID
+      const user = await User.findOne({ firebaseUid: decoded.uid }).select('-driveToken -driveRefreshToken');
       
       if (!user) {
         logger.warn('Socket connection attempted with invalid user', {
           socketId: socket.id,
-          userId: decoded.id
+          firebaseUid: decoded.uid
         });
         return next(new Error('User not found'));
       }
@@ -81,15 +81,6 @@ class WebSocketService {
           userId: user._id
         });
         return next(new Error('Account is inactive'));
-      }
-
-      // Check if password was changed after token was issued
-      if (user.changedPasswordAfter(decoded.iat)) {
-        logger.warn('Socket connection attempted with outdated token', {
-          socketId: socket.id,
-          userId: user._id
-        });
-        return next(new Error('Token is outdated, please login again'));
       }
 
       // Attach user to socket

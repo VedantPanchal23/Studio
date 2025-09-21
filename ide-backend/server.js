@@ -16,9 +16,6 @@ const { initializeDatabases } = require('./utils/database');
 // Import WebSocket service
 const webSocketService = require('./services/websocket');
 
-// Import passport configuration
-const passport = require('./config/passport');
-
 // Import middleware
 const { 
   globalErrorHandler, 
@@ -35,7 +32,6 @@ const {
   validateContentType,
   generateCSRFToken
 } = require('./middleware/security');
-const { sessionSecurity } = require('./middleware/auth');
 
 const app = express();
 const server = createServer(app);
@@ -109,13 +105,6 @@ app.use(session({
   cookie: config.session.cookie
 }));
 
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Session security
-app.use(sessionSecurity);
-
 // CSRF token generation
 app.use(generateCSRFToken);
 
@@ -128,7 +117,9 @@ app.use('/api', apiLimiter);
 
 // Authentication routes
 const authRoutes = require('./routes/auth');
+const firebaseAuthRoutes = require('./routes/firebaseAuth');
 app.use('/api/auth', authRoutes);
+app.use('/api/firebase-auth', firebaseAuthRoutes);
 
 // File management routes
 const fileRoutes = require('./routes/files');
@@ -382,9 +373,9 @@ const startServer = async () => {
   }
 };
 
-// Start the server
-startServer();
-
-
+// Start the server only if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}
 
 module.exports = app;

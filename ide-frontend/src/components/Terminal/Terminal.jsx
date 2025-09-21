@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Terminal as TerminalIcon, X, Plus, Maximize2, Settings } from 'lucide-react'
 import { XTermTerminal } from './XTermTerminal'
 import { TerminalTest } from './TerminalTest'

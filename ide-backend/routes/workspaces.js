@@ -1,8 +1,9 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, param, query, validationResult } = require('express-validator');
 const Workspace = require('../models/Workspace');
 const User = require('../models/User');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 const logger = require('../utils/logger');
 const fileSystem = require('../utils/fileSystem');
 
@@ -85,6 +86,14 @@ const checkWorkspaceAccess = (requiredPermission = 'read') => {
       const { workspaceId } = req.params;
       const userId = req.user.id;
 
+      // Validate ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid workspace ID format'
+        });
+      }
+
       const workspace = await Workspace.findById(workspaceId);
       if (!workspace) {
         return res.status(404).json({
@@ -135,7 +144,7 @@ const checkWorkspaceAccess = (requiredPermission = 'read') => {
 };
 
 // GET /api/workspaces - List user workspaces
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateFirebase, async (req, res) => {
   try {
     const userId = req.user.id;
     const { 
@@ -218,7 +227,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // POST /api/workspaces - Create new workspace
-router.post('/', authenticateToken, createWorkspaceValidation, validateRequest, async (req, res) => {
+router.post('/', authenticateFirebase, createWorkspaceValidation, validateRequest, async (req, res) => {
   try {
     const userId = req.user.id;
     const { name, description, isPublic = false, settings = {} } = req.body;
@@ -283,7 +292,7 @@ router.post('/', authenticateToken, createWorkspaceValidation, validateRequest, 
 });
 
 // GET /api/workspaces/:workspaceId - Get workspace details
-router.get('/:workspaceId', authenticateToken, checkWorkspaceAccess('read'), async (req, res) => {
+router.get('/:workspaceId', authenticateFirebase, checkWorkspaceAccess('read'), async (req, res) => {
   try {
     const workspace = req.workspace;
     const userRole = req.userRole;
@@ -311,7 +320,7 @@ router.get('/:workspaceId', authenticateToken, checkWorkspaceAccess('read'), asy
 });
 
 // PUT /api/workspaces/:workspaceId - Update workspace
-router.put('/:workspaceId', authenticateToken, updateWorkspaceValidation, validateRequest, checkWorkspaceAccess('admin'), async (req, res) => {
+router.put('/:workspaceId', authenticateFirebase, updateWorkspaceValidation, validateRequest, checkWorkspaceAccess('admin'), async (req, res) => {
   try {
     const workspace = req.workspace;
     const { name, description, isPublic, settings } = req.body;
@@ -383,7 +392,7 @@ router.put('/:workspaceId', authenticateToken, updateWorkspaceValidation, valida
 });
 
 // DELETE /api/workspaces/:workspaceId - Delete workspace
-router.delete('/:workspaceId', authenticateToken, checkWorkspaceAccess('admin'), async (req, res) => {
+router.delete('/:workspaceId', authenticateFirebase, checkWorkspaceAccess('admin'), async (req, res) => {
   try {
     const workspace = req.workspace;
     const { permanent = false } = req.query;
@@ -421,7 +430,7 @@ router.delete('/:workspaceId', authenticateToken, checkWorkspaceAccess('admin'),
 });
 
 // POST /api/workspaces/:workspaceId/collaborators - Add collaborator
-router.post('/:workspaceId/collaborators', authenticateToken, collaboratorValidation, validateRequest, checkWorkspaceAccess('admin'), async (req, res) => {
+router.post('/:workspaceId/collaborators', authenticateFirebase, collaboratorValidation, validateRequest, checkWorkspaceAccess('admin'), async (req, res) => {
   try {
     const workspace = req.workspace;
     const { email, role = 'viewer' } = req.body;
@@ -482,7 +491,7 @@ router.post('/:workspaceId/collaborators', authenticateToken, collaboratorValida
 });
 
 // PUT /api/workspaces/:workspaceId/collaborators/:userId - Update collaborator role
-router.put('/:workspaceId/collaborators/:userId', authenticateToken, checkWorkspaceAccess('admin'), async (req, res) => {
+router.put('/:workspaceId/collaborators/:userId', authenticateFirebase, checkWorkspaceAccess('admin'), async (req, res) => {
   try {
     const workspace = req.workspace;
     const { userId } = req.params;
@@ -540,7 +549,7 @@ router.put('/:workspaceId/collaborators/:userId', authenticateToken, checkWorksp
 });
 
 // DELETE /api/workspaces/:workspaceId/collaborators/:userId - Remove collaborator
-router.delete('/:workspaceId/collaborators/:userId', authenticateToken, checkWorkspaceAccess('admin'), async (req, res) => {
+router.delete('/:workspaceId/collaborators/:userId', authenticateFirebase, checkWorkspaceAccess('admin'), async (req, res) => {
   try {
     const workspace = req.workspace;
     const { userId } = req.params;
@@ -583,7 +592,7 @@ router.delete('/:workspaceId/collaborators/:userId', authenticateToken, checkWor
 });
 
 // POST /api/workspaces/:workspaceId/duplicate - Duplicate workspace
-router.post('/:workspaceId/duplicate', authenticateToken, checkWorkspaceAccess('read'), async (req, res) => {
+router.post('/:workspaceId/duplicate', authenticateFirebase, checkWorkspaceAccess('read'), async (req, res) => {
   try {
     const originalWorkspace = req.workspace;
     const { name } = req.body;
@@ -656,7 +665,7 @@ router.post('/:workspaceId/duplicate', authenticateToken, checkWorkspaceAccess('
 });
 
 // POST /api/workspaces/:workspaceId/restore - Restore archived workspace
-router.post('/:workspaceId/restore', authenticateToken, async (req, res) => {
+router.post('/:workspaceId/restore', authenticateFirebase, async (req, res) => {
   try {
     const { workspaceId } = req.params;
     const userId = req.user.id;
@@ -758,7 +767,7 @@ router.get('/public/list', async (req, res) => {
 });
 
 // GET /api/workspaces/stats - Get workspace statistics
-router.get('/stats/overview', authenticateToken, async (req, res) => {
+router.get('/stats/overview', authenticateFirebase, async (req, res) => {
   try {
     const userId = req.user.id;
 

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = require('../server');
 const User = require('../models/User');
 const Workspace = require('../models/Workspace');
-const JWTUtils = require('../utils/jwt');
+const firebaseTestAuth = require('./utils/firebaseTestAuth');
 
 describe('Workspace Management API', () => {
   let testUser;
@@ -13,37 +13,64 @@ describe('Workspace Management API', () => {
   let testWorkspace;
 
   beforeAll(async () => {
-    // Create test users
+    // Create test users with Firebase UIDs matching what the mock tokens generate
     testUser = new User({
-      googleId: 'test-google-id-1',
-      email: 'test1@example.com',
+      firebaseUid: 'test-firebase-uid-1',
+      email: 'test-test-firebase-uid-1@example.com',
       name: 'Test User 1',
       avatar: 'https://example.com/avatar1.jpg'
     });
     await testUser.save();
 
     testUser2 = new User({
-      googleId: 'test-google-id-2',
-      email: 'test2@example.com',
+      firebaseUid: 'test-firebase-uid-2',
+      email: 'test-test-firebase-uid-2@example.com',
       name: 'Test User 2',
       avatar: 'https://example.com/avatar2.jpg'
     });
     await testUser2.save();
 
-    // Generate auth tokens
-    authToken = JWTUtils.generateAccessToken({ id: testUser._id });
-    authToken2 = JWTUtils.generateAccessToken({ id: testUser2._id });
+    // Generate Firebase auth tokens
+    authToken = firebaseTestAuth.generateMockIdToken({ uid: 'test-firebase-uid-1' });
+    authToken2 = firebaseTestAuth.generateMockIdToken({ uid: 'test-firebase-uid-2' });
   });
 
   afterAll(async () => {
     // Clean up test data
-    await User.deleteMany({ email: { $in: ['test1@example.com', 'test2@example.com'] } });
+    await User.deleteMany({ email: { $in: ['test-test-firebase-uid-1@example.com', 'test-test-firebase-uid-2@example.com'] } });
     await Workspace.deleteMany({ owner: { $in: [testUser._id, testUser2._id] } });
   });
 
   beforeEach(async () => {
-    // Clean up workspaces before each test
+    // Clean up workspaces before each test, but preserve users
     await Workspace.deleteMany({ owner: { $in: [testUser._id, testUser2._id] } });
+    
+    // Ensure test users exist (in case they were cleared by global setup)
+    const existingUser1 = await User.findOne({ firebaseUid: 'test-firebase-uid-1' });
+    if (!existingUser1) {
+      testUser = new User({
+        firebaseUid: 'test-firebase-uid-1',
+        email: 'test-test-firebase-uid-1@example.com',
+        name: 'Test User 1',
+        avatar: 'https://example.com/avatar1.jpg'
+      });
+      await testUser.save();
+    } else {
+      testUser = existingUser1;
+    }
+
+    const existingUser2 = await User.findOne({ firebaseUid: 'test-firebase-uid-2' });
+    if (!existingUser2) {
+      testUser2 = new User({
+        firebaseUid: 'test-firebase-uid-2',
+        email: 'test-test-firebase-uid-2@example.com',
+        name: 'Test User 2',
+        avatar: 'https://example.com/avatar2.jpg'
+      });
+      await testUser2.save();
+    } else {
+      testUser2 = existingUser2;
+    }
   });
 
   describe('POST /api/workspaces', () => {
@@ -459,13 +486,24 @@ describe('Workspace Management API', () => {
 
   describe('Workspace Utilities', () => {
     beforeEach(async () => {
-      testWorkspace = new Workspace({
+      // Create workspace via API to ensure directory exists
+      const workspaceData = {
         name: 'Test Workspace',
         description: 'A test workspace',
-        owner: testUser._id,
-        isPublic: false
-      });
-      await testWorkspace.save();
+        isPublic: false,
+        settings: {
+          runtime: 'node',
+          version: '18'
+        }
+      };
+
+      const response = await request(app)
+        .post('/api/workspaces')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(workspaceData)
+        .expect(201);
+
+      testWorkspace = response.body.data.workspace;
     });
 
     describe('POST /api/workspaces/:workspaceId/duplicate', () => {
@@ -496,8 +534,7 @@ describe('Workspace Management API', () => {
     describe('POST /api/workspaces/:workspaceId/restore', () => {
       beforeEach(async () => {
         // Archive the workspace first
-        testWorkspace.isArchived = true;
-        await testWorkspace.save();
+        await Workspace.findByIdAndUpdate(testWorkspace._id, { isArchived: true });
       });
 
       it('should restore archived workspace', async () => {
@@ -516,8 +553,7 @@ describe('Workspace Management API', () => {
 
       it('should fail to restore non-archived workspace', async () => {
         // Unarchive first
-        testWorkspace.isArchived = false;
-        await testWorkspace.save();
+        await Workspace.findByIdAndUpdate(testWorkspace._id, { isArchived: false });
 
         const response = await request(app)
           .post(`/api/workspaces/${testWorkspace._id}/restore`)
@@ -573,26 +609,53 @@ describe('Workspace Management API', () => {
 
   describe('GET /api/workspaces/stats/overview', () => {
     beforeEach(async () => {
+      // Ensure users exist first
+      await User.findOneAndUpdate(
+        { firebaseUid: 'test-firebase-uid-1' },
+        {
+          firebaseUid: 'test-firebase-uid-1',
+          email: 'test-test-firebase-uid-1@example.com',
+          name: 'Test User 1',
+          avatar: 'https://example.com/avatar1.jpg'
+        },
+        { upsert: true, new: true }
+      );
+
+      await User.findOneAndUpdate(
+        { firebaseUid: 'test-firebase-uid-2' },
+        {
+          firebaseUid: 'test-firebase-uid-2',
+          email: 'test-test-firebase-uid-2@example.com',
+          name: 'Test User 2',
+          avatar: 'https://example.com/avatar2.jpg'
+        },
+        { upsert: true, new: true }
+      );
+
+      // Get fresh user references
+      const user1 = await User.findOne({ firebaseUid: 'test-firebase-uid-1' });
+      const user2 = await User.findOne({ firebaseUid: 'test-firebase-uid-2' });
+
       // Create various workspaces for stats
       const workspaces = [
         new Workspace({
           name: 'Workspace 1',
-          owner: testUser._id,
+          owner: user1._id,
           isPublic: true,
           stats: { totalFiles: 5, totalSize: 1000, executionCount: 10 }
         }),
         new Workspace({
           name: 'Workspace 2',
-          owner: testUser._id,
+          owner: user1._id,
           isPublic: false,
           isArchived: true,
           stats: { totalFiles: 3, totalSize: 500, executionCount: 5 }
         }),
         new Workspace({
           name: 'Collaborative Workspace',
-          owner: testUser2._id,
+          owner: user2._id,
           collaborators: [{
-            userId: testUser._id,
+            userId: user1._id,
             role: 'editor',
             permissions: { read: true, write: true, execute: true, admin: false }
           }],

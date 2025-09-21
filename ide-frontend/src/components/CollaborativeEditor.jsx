@@ -33,8 +33,7 @@ const CollaborativeEditor = ({
     isJoining,
     doc,
     awareness,
-    updateAwareness,
-    getDocumentText
+    updateAwareness
   } = useCollaboration(workspaceId, filePath, userInfo)
 
   // Handle editor mount
@@ -75,7 +74,7 @@ const CollaborativeEditor = ({
     })
 
     // Set up content change listener
-    editor.onDidChangeModelContent((e) => {
+    editor.onDidChangeModelContent(() => {
       if (onContentChange && bindingRef.current) {
         const content = editor.getValue()
         onContentChange(content)

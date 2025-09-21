@@ -98,23 +98,8 @@ describe('User Model', () => {
       user = await new User({
         email: 'test@example.com',
         name: 'Test User',
-        password: 'TestPassword123!'
+        firebaseUid: 'test-firebase-uid'
       }).save();
-    });
-
-    test('should hash password on save', async () => {
-      expect(user.password).not.toBe('TestPassword123!');
-      expect(user.password).toMatch(/^\$2[aby]\$\d+\$/); // bcrypt hash pattern
-    });
-
-    test('should verify correct password', async () => {
-      const isCorrect = await user.correctPassword('TestPassword123!', user.password);
-      expect(isCorrect).toBe(true);
-    });
-
-    test('should reject incorrect password', async () => {
-      const isCorrect = await user.correctPassword('WrongPassword', user.password);
-      expect(isCorrect).toBe(false);
     });
 
     test('should update last login', async () => {
@@ -125,16 +110,6 @@ describe('User Model', () => {
       
       await user.updateLastLogin();
       expect(user.lastLogin.getTime()).toBeGreaterThan(originalLastLogin.getTime());
-    });
-
-    test('should create password reset token', () => {
-      const resetToken = user.createPasswordResetToken();
-      
-      expect(resetToken).toBeDefined();
-      expect(typeof resetToken).toBe('string');
-      expect(user.passwordResetToken).toBeDefined();
-      expect(user.passwordResetExpires).toBeDefined();
-      expect(user.passwordResetExpires.getTime()).toBeGreaterThan(Date.now());
     });
   });
 

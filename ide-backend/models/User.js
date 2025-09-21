@@ -1,9 +1,15 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
-  // Google OAuth information
+  // Firebase Authentication UID
+  firebaseUid: {
+    type: String,
+    unique: true,
+    sparse: true // Allow null values but ensure uniqueness when present
+  },
+  
+  // Legacy Google OAuth information (for migration purposes)
   googleId: {
     type: String,
     unique: true,
@@ -36,13 +42,6 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: null
-  },
-  
-  // Password for non-OAuth users (future feature)
-  password: {
-    type: String,
-    minlength: [8, 'Password must be at least 8 characters long'],
-    select: false // Don't include password in queries by default
   },
   
   // User preferences
@@ -114,17 +113,6 @@ const userSchema = new mongoose.Schema({
     default: false
   },
   
-  // Security
-  passwordResetToken: {
-    type: String,
-    select: false
-  },
-  
-  passwordResetExpires: {
-    type: Date,
-    select: false
-  },
-  
   // Timestamps
   lastLogin: {
     type: Date,
@@ -155,20 +143,6 @@ userSchema.virtual('workspaceCount').get(function() {
   return this.workspaces ? this.workspaces.length : 0;
 });
 
-// Pre-save middleware to hash password
-userSchema.pre('save', async function(next) {
-  // Only hash password if it's modified and exists
-  if (!this.isModified('password') || !this.password) return next();
-  
-  try {
-    // Hash password with cost of 12
-    this.password = await bcrypt.hash(this.password, 12);
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Pre-save middleware to update timestamps
 userSchema.pre('save', function(next) {
   if (!this.isNew) {
@@ -176,34 +150,6 @@ userSchema.pre('save', function(next) {
   }
   next();
 });
-
-// Instance method to check password
-userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-};
-
-// Instance method to check if password was changed after JWT was issued
-userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
-  if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
-    return JWTTimestamp < changedTimestamp;
-  }
-  return false;
-};
-
-// Instance method to create password reset token
-userSchema.methods.createPasswordResetToken = function() {
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  
-  this.passwordResetToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-  
-  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-  
-  return resetToken;
-};
 
 // Instance method to update last login
 userSchema.methods.updateLastLogin = function() {
@@ -219,6 +165,55 @@ userSchema.statics.findByEmail = function(email) {
 // Static method to find user by Google ID
 userSchema.statics.findByGoogleId = function(googleId) {
   return this.findOne({ googleId });
+};
+
+// Static method to find user by Firebase UID
+userSchema.statics.findByFirebaseUid = function(firebaseUid) {
+  return this.findOne({ firebaseUid });
+};
+
+// Static method to create or update user from Firebase token
+userSchema.statics.createFromFirebase = async function(firebaseUser, decodedToken) {
+  try {
+    const userData = {
+      firebaseUid: firebaseUser.uid,
+      email: firebaseUser.email || decodedToken.email,
+      name: firebaseUser.displayName || decodedToken.name || firebaseUser.email?.split('@')[0] || 'User',
+      avatar: firebaseUser.photoURL || decodedToken.picture,
+      isVerified: firebaseUser.emailVerified || decodedToken.email_verified || false,
+      lastLogin: Date.now()
+    };
+
+    // Try to find existing user by Firebase UID first
+    let user = await this.findByFirebaseUid(firebaseUser.uid);
+    
+    if (user) {
+      // Update existing user
+      Object.assign(user, userData);
+      await user.save();
+      return user;
+    }
+
+    // Check if user exists with same email (for account linking)
+    user = await this.findByEmail(userData.email);
+    
+    if (user) {
+      // Link Firebase UID to existing account
+      user.firebaseUid = firebaseUser.uid;
+      user.lastLogin = Date.now();
+      if (userData.avatar && !user.avatar) user.avatar = userData.avatar;
+      if (userData.isVerified) user.isVerified = true;
+      await user.save();
+      return user;
+    }
+
+    // Create new user
+    user = new this(userData);
+    await user.save();
+    return user;
+  } catch (error) {
+    throw new Error(`Failed to create/update user from Firebase: ${error.message}`);
+  }
 };
 
 // Static method to get user with workspaces populated

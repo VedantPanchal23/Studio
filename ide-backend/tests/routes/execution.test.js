@@ -1,11 +1,11 @@
 const request = require('supertest');
 const app = require('../../server');
 const dockerService = require('../../services/dockerService');
-const JWTUtils = require('../../utils/jwt');
+const admin = require('firebase-admin');
 
 // Mock dependencies
 jest.mock('../../services/dockerService');
-jest.mock('../../utils/jwt');
+jest.mock('firebase-admin');
 
 describe('Execution Routes', () => {
   let authToken;
@@ -13,13 +13,18 @@ describe('Execution Routes', () => {
 
   beforeEach(() => {
     mockUser = {
-      id: 'test-user-id',
+      uid: 'test-firebase-uid',
       email: 'test@example.com',
       name: 'Test User'
     };
 
-    authToken = 'mock-jwt-token';
-    JWTUtils.verifyToken.mockResolvedValue(mockUser);
+    authToken = 'firebase-test-token-test-firebase-uid';
+    
+    // Mock Firebase Admin Auth
+    const mockAuth = {
+      verifyIdToken: jest.fn().mockResolvedValue(mockUser)
+    };
+    admin.auth.mockReturnValue(mockAuth);
 
     jest.clearAllMocks();
   });
@@ -279,7 +284,7 @@ describe('Execution Routes', () => {
     });
 
     it('should return 401 with invalid auth token', async () => {
-      JWTUtils.verifyToken.mockRejectedValue(new Error('Invalid token'));
+      admin.auth().verifyIdToken.mockRejectedValue(new Error('Invalid token'));
 
       const response = await request(app)
         .post('/api/execution/containers')

@@ -227,7 +227,7 @@ export class FileAPI {
     try {
       const { files } = await this.listFiles(workspaceId);
       return this.filterFiles(files, query, options);
-    } catch (error) {
+    } catch {
       throw new Error('Failed to search files');
     }
   }
@@ -242,7 +242,7 @@ export class FileAPI {
   static filterFiles(files, query, options = {}) {
     if (!query) return files;
 
-    const { caseSensitive = false, includeContent = false } = options;
+    const { caseSensitive = false } = options;
     const searchQuery = caseSensitive ? query : query.toLowerCase();
 
     return files.filter(file => {
@@ -386,7 +386,8 @@ export class FileAPI {
     }
 
     // Check for invalid characters
-    const invalidChars = /[<>:"|?*\x00-\x1f]/;
+    // eslint-disable-next-line no-control-regex
+    const invalidChars = /[<>:"|?*\u0000-\u001F]/;
     if (invalidChars.test(fileName)) {
       errors.push('File name contains invalid characters');
     }
@@ -453,11 +454,12 @@ export class FileAPI {
         case 'modified':
           comparison = new Date(a.lastModified || 0) - new Date(b.lastModified || 0);
           break;
-        case 'type':
+        case 'type': {
           const aExt = a.extension || '';
           const bExt = b.extension || '';
           comparison = aExt.localeCompare(bExt);
           break;
+        }
         default:
           comparison = a.name.localeCompare(b.name, undefined, { numeric: true });
       }

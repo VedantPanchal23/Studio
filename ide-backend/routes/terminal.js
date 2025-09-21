@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateJWT } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 const terminalService = require('../services/terminal');
 const logger = require('../utils/logger');
 
@@ -9,7 +9,7 @@ const router = express.Router();
  * Get user's terminal sessions
  * GET /api/terminal/sessions
  */
-router.get('/sessions', authenticateJWT, (req, res) => {
+router.get('/sessions', authenticateFirebase, (req, res) => {
     try {
         const userId = req.user._id.toString();
         const terminals = terminalService.getUserTerminals(userId);
@@ -34,7 +34,7 @@ router.get('/sessions', authenticateJWT, (req, res) => {
  * Get specific terminal info
  * GET /api/terminal/:terminalId
  */
-router.get('/:terminalId', authenticateJWT, (req, res) => {
+router.get('/:terminalId', authenticateFirebase, (req, res) => {
     try {
         const { terminalId } = req.params;
         const userId = req.user._id.toString();
@@ -73,7 +73,7 @@ router.get('/:terminalId', authenticateJWT, (req, res) => {
  * Create new terminal session
  * POST /api/terminal/create
  */
-router.post('/create', authenticateJWT, (req, res) => {
+router.post('/create', authenticateFirebase, (req, res) => {
     try {
         const userId = req.user._id.toString();
         const { workspaceId, shell, cols, rows, cwd } = req.body;
@@ -117,7 +117,7 @@ router.post('/create', authenticateJWT, (req, res) => {
  * Resize terminal
  * PUT /api/terminal/:terminalId/resize
  */
-router.put('/:terminalId/resize', authenticateJWT, (req, res) => {
+router.put('/:terminalId/resize', authenticateFirebase, (req, res) => {
     try {
         const { terminalId } = req.params;
         const userId = req.user._id.toString();
@@ -173,7 +173,7 @@ router.put('/:terminalId/resize', authenticateJWT, (req, res) => {
  * Destroy terminal session
  * DELETE /api/terminal/:terminalId
  */
-router.delete('/:terminalId', authenticateJWT, (req, res) => {
+router.delete('/:terminalId', authenticateFirebase, (req, res) => {
     try {
         const { terminalId } = req.params;
         const userId = req.user._id.toString();
@@ -228,7 +228,7 @@ router.delete('/:terminalId', authenticateJWT, (req, res) => {
  * Get command history for terminal
  * GET /api/terminal/:terminalId/history
  */
-router.get('/:terminalId/history', authenticateJWT, (req, res) => {
+router.get('/:terminalId/history', authenticateFirebase, (req, res) => {
     try {
         const { terminalId } = req.params;
         const userId = req.user._id.toString();
@@ -275,7 +275,7 @@ router.get('/:terminalId/history', authenticateJWT, (req, res) => {
  * Get autocomplete suggestions
  * POST /api/terminal/:terminalId/autocomplete
  */
-router.post('/:terminalId/autocomplete', authenticateJWT, (req, res) => {
+router.post('/:terminalId/autocomplete', authenticateFirebase, (req, res) => {
     try {
         const { terminalId } = req.params;
         const userId = req.user._id.toString();
@@ -330,7 +330,7 @@ router.post('/:terminalId/autocomplete', authenticateJWT, (req, res) => {
  * Clear command history for terminal
  * DELETE /api/terminal/:terminalId/history
  */
-router.delete('/:terminalId/history', authenticateJWT, (req, res) => {
+router.delete('/:terminalId/history', authenticateFirebase, (req, res) => {
     try {
         const { terminalId } = req.params;
         const userId = req.user._id.toString();
@@ -373,7 +373,7 @@ router.delete('/:terminalId/history', authenticateJWT, (req, res) => {
  * Get terminal statistics (admin endpoint)
  * GET /api/terminal/stats
  */
-router.get('/admin/stats', authenticateJWT, (req, res) => {
+router.get('/admin/stats', authenticateFirebase, (req, res) => {
     try {
         // This would typically require admin permissions
         // For now, just return basic stats

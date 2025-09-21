@@ -105,7 +105,7 @@ describe('IconProvider', () => {
     const icon = screen.getByTestId('icon-Home');
     expect(icon).toHaveAttribute('width', '32');
     expect(icon).toHaveAttribute('height', '32');
-    expect(icon).toHaveAttribute('color', '#00ff00');
+    expect(icon).toHaveAttribute('stroke', '#00ff00');
   });
 });
 

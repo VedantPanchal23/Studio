@@ -102,8 +102,6 @@ export const fileTypeIcons = {
   'astro': Code,
   'angular': Code,
   'react': Code,
-  'jsx': Code,
-  'tsx': Code,
   
   // Configuration Files
   'json': FileJson,
@@ -318,8 +316,6 @@ export const fileTypeIcons = {
   'icons': FileImage,
   'fonts': FileType,
   'styles': Palette,
-  'css': Palette,
-  'scss': Palette,
   'src': Code,
   'source': Code,
   'sources': Code,
@@ -353,16 +349,13 @@ export const fileTypeIcons = {
   'unit': FileCheck,
   'docs': BookOpen,
   'documentation': BookOpen,
-  'doc': BookOpen,
   'examples': BookOpen,
   'samples': BookOpen,
   'demo': Play,
   'demos': Play,
-  'config': Settings,
   'configuration': Settings,
   'configs': Settings,
   'settings': Settings,
-  'env': Settings,
   'environments': Settings,
   'scripts': Terminal,
   'tools': Wrench,
@@ -451,12 +444,6 @@ export const getFileTypeIcon = (filename) => {
 export const getFileTypeIconName = (filename) => {
   const IconComponent = getFileTypeIcon(filename);
   
-  // Map icon components back to their names
-  const iconNameMap = Object.entries(fileTypeIcons).reduce((acc, [key, component]) => {
-    acc[component] = key;
-    return acc;
-  }, {});
-  
   // Find the component name in Lucide icons
   const lucideIconName = Object.entries({
     FileText, FileCode, FileImage, FileVideo, FileArchive, Folder, FolderOpen,
@@ -465,7 +452,7 @@ export const getFileTypeIconName = (filename) => {
     Box, Coffee, Zap, Cpu, Smartphone, Monitor, Cloud, Server, HardDrive,
     FileX, FileCheck, FileWarning, Cog, Wrench, Puzzle, Shield, Eye, Image,
     Play, Music, Archive, BookOpen, FileType, Brackets, Binary, Workflow
-  }).find(([name, component]) => component === IconComponent);
+  }).find(([, component]) => component === IconComponent);
   
   return lucideIconName ? lucideIconName[0] : 'FileText';
 };

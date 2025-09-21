@@ -10,8 +10,6 @@ export function EditorPanel() {
   const { 
     tabs, 
     activeTabId,
-    loading,
-    error,
     unsavedChangesDialog,
     closeTab, 
     setActiveTab, 
@@ -19,7 +17,6 @@ export function EditorPanel() {
     saveTab,
     saveAllTabs,
     reloadTab,
-    clearError,
     getActiveTab,
     hasUnsavedChanges,
     getUnsavedTabsCount,
@@ -64,7 +61,7 @@ export function EditorPanel() {
         monacoLSPIntegration.closeDocument(activeTab.path)
       }
     }
-  }, [activeTab?.id, activeTab?.path, activeTab?.language])
+  }, [activeTab?.id, activeTab?.path, activeTab?.language, activeTab])
 
   // Cleanup LSP integration on unmount
   useEffect(() => {
@@ -99,11 +96,6 @@ export function EditorPanel() {
       }
     }
   }, [activeTab, updateTabContent])
-
-  const handleTabClose = useCallback(async (e, tabId) => {
-    e.stopPropagation()
-    await closeTab(tabId)
-  }, [closeTab])
 
   const handleReloadFile = useCallback(async () => {
     if (activeTab) {

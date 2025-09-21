@@ -154,7 +154,7 @@ const WorkspaceCard = ({ workspace, onSelect, onSettings }) => {
   );
 };
 
-const WorkspaceList = ({ workspaces, onSelect, onSettings }) => {
+const WorkspaceList = ({ workspaces, onSelect }) => {
   return (
     <div className={styles.workspaceList}>
       {workspaces.map((workspace) => (

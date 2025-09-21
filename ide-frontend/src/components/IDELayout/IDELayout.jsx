@@ -41,7 +41,7 @@ export function IDELayout() {
       // Only set default in non-dev mode if no workspace is set
       useWorkspaceStore.getState().setCurrentWorkspace('test-workspace-123');
     }
-  }, []) // Remove currentWorkspaceId dependency to run only once
+  }, [currentWorkspaceId]) // Include currentWorkspaceId dependency
 
   const handleFileOpen = (filePath, fileName) => {
     openFile(filePath, fileName)

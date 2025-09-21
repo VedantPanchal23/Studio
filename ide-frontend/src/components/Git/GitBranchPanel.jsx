@@ -110,13 +110,6 @@ const GitBranchPanel = () => {
     setShowDeleteDialog(true);
   };
 
-  const getBranchType = (branch) => {
-    if (branch.remote) {
-      return 'remote';
-    }
-    return 'local';
-  };
-
   const getBranchDisplayName = (branch) => {
     if (branch.remote) {
       return branch.name.replace('origin/', '');

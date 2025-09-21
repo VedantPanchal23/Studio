@@ -29,8 +29,7 @@ const CollaborativeTextArea = ({
     isJoining,
     doc,
     awareness,
-    updateAwareness,
-    bindTextElement
+    updateAwareness
   } = useCollaboration(workspaceId, filePath, userInfo)
 
   // Set up text binding when document is ready

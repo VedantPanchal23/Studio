@@ -4,14 +4,14 @@ const dockerService = require('../services/dockerService');
 const containerSecurityService = require('../services/containerSecurityService');
 const containerCleanupService = require('../services/containerCleanupService');
 const auditService = require('../services/auditService');
-const { authenticateToken, requireAdmin, getSecurityStats } = require('../middleware/auth');
+const { authenticateFirebase, requireAdmin, getSecurityStats } = require('../middleware/firebaseAuth');
 const { auditLogger } = require('../middleware/security');
 const logger = require('../utils/logger');
 
 /**
  * Get security statistics for all containers
  */
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', authenticateFirebase, async (req, res) => {
   try {
     if (!dockerService.isAvailable) {
       return res.json({
@@ -42,7 +42,7 @@ router.get('/stats', authenticateToken, async (req, res) => {
 /**
  * Get security metrics for a specific container
  */
-router.get('/container/:containerId/metrics', authenticateToken, async (req, res) => {
+router.get('/container/:containerId/metrics', authenticateFirebase, async (req, res) => {
   try {
     if (!dockerService.isAvailable) {
       return res.status(503).json({
@@ -78,7 +78,7 @@ router.get('/container/:containerId/metrics', authenticateToken, async (req, res
 /**
  * Get security violations for a specific container
  */
-router.get('/container/:containerId/violations', authenticateToken, async (req, res) => {
+router.get('/container/:containerId/violations', authenticateFirebase, async (req, res) => {
   try {
     if (!dockerService.isAvailable) {
       return res.json({
@@ -106,7 +106,7 @@ router.get('/container/:containerId/violations', authenticateToken, async (req, 
 /**
  * Force cleanup of a specific container
  */
-router.post('/container/:containerId/cleanup', authenticateToken, async (req, res) => {
+router.post('/container/:containerId/cleanup', authenticateFirebase, async (req, res) => {
   try {
     const { containerId } = req.params;
     const userId = req.user.id;
@@ -153,7 +153,7 @@ router.post('/container/:containerId/cleanup', authenticateToken, async (req, re
 /**
  * Update security configuration (admin only)
  */
-router.put('/config', authenticateToken, async (req, res) => {
+router.put('/config', authenticateFirebase, async (req, res) => {
   try {
     if (!req.user.isAdmin) {
       return res.status(403).json({
@@ -196,7 +196,7 @@ router.put('/config', authenticateToken, async (req, res) => {
 /**
  * Trigger manual cleanup (admin only)
  */
-router.post('/cleanup', authenticateToken, async (req, res) => {
+router.post('/cleanup', authenticateFirebase, async (req, res) => {
   try {
     if (!req.user.isAdmin) {
       return res.status(403).json({
@@ -235,7 +235,7 @@ router.post('/cleanup', authenticateToken, async (req, res) => {
 /**
  * Get cleanup statistics
  */
-router.get('/cleanup/stats', authenticateToken, async (req, res) => {
+router.get('/cleanup/stats', authenticateFirebase, async (req, res) => {
   try {
     const stats = containerCleanupService.getCleanupStats();
     res.json({
@@ -254,7 +254,7 @@ router.get('/cleanup/stats', authenticateToken, async (req, res) => {
 /**
  * Get security audit logs (admin only)
  */
-router.get('/audit', authenticateToken, requireAdmin, auditLogger('view_audit_logs'), async (req, res) => {
+router.get('/audit', authenticateFirebase, requireAdmin, auditLogger('view_audit_logs'), async (req, res) => {
   try {
     const filters = {
       eventType: req.query.eventType,
@@ -284,7 +284,7 @@ router.get('/audit', authenticateToken, requireAdmin, auditLogger('view_audit_lo
 /**
  * Get audit statistics (admin only)
  */
-router.get('/audit/stats', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/audit/stats', authenticateFirebase, requireAdmin, async (req, res) => {
   try {
     const timeRange = req.query.timeRange || '24h';
     const stats = auditService.getStatistics(timeRange);
@@ -305,7 +305,7 @@ router.get('/audit/stats', authenticateToken, requireAdmin, async (req, res) => 
 /**
  * Export audit logs (admin only)
  */
-router.get('/audit/export', authenticateToken, requireAdmin, auditLogger('export_audit_logs'), async (req, res) => {
+router.get('/audit/export', authenticateFirebase, requireAdmin, auditLogger('export_audit_logs'), async (req, res) => {
   try {
     const format = req.query.format || 'json';
     const filters = {
@@ -336,7 +336,7 @@ router.get('/audit/export', authenticateToken, requireAdmin, auditLogger('export
 /**
  * Get authentication security statistics
  */
-router.get('/auth/stats', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/auth/stats', authenticateFirebase, requireAdmin, async (req, res) => {
   try {
     const authStats = getSecurityStats();
 

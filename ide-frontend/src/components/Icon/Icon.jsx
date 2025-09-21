@@ -30,7 +30,6 @@ const BaseIcon = forwardRef((initialProps, ref) => {
     className = '', 
     strokeWidth,
     color,
-    fileType,
     fallback,
     'aria-hidden': ariaHidden,
     'aria-label': ariaLabel,

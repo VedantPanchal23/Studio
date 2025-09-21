@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../stores/authStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
@@ -7,31 +7,21 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import './auth-common.css';
 
 /**
- * OAuth success page - handles the callback from Google OAuth
+ * OAuth success page - handles redirect-based OAuth (legacy)
+ * Note: With Firebase Auth, we use popup-based OAuth, so this page may not be used
  */
 const AuthSuccess = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('processing'); // 'processing', 'success', 'error'
   const [message, setMessage] = useState('Processing authentication...');
   
-  const { handleOAuthCallback, isAuthenticated } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     const processCallback = async () => {
       try {
-        // Get tokens from URL parameters
-        const accessToken = searchParams.get('token');
-        const refreshToken = searchParams.get('refresh');
-        
-        if (!accessToken) {
-          throw new Error('No access token received from authentication');
-        }
-        
-        // Handle the OAuth callback
-        const success = await handleOAuthCallback(accessToken, refreshToken);
-        
-        if (success) {
+        // Check if user is already authenticated (Firebase handles OAuth in popup)
+        if (isAuthenticated) {
           setStatus('success');
           setMessage('Authentication successful! Redirecting to IDE...');
           
@@ -40,12 +30,19 @@ const AuthSuccess = () => {
             navigate('/ide', { replace: true });
           }, 2000);
         } else {
-          throw new Error('Authentication failed');
+          // If not authenticated, this might be a legacy OAuth callback
+          // Redirect to login page
+          setStatus('error');
+          setMessage('Authentication incomplete. Redirecting to login...');
+          
+          setTimeout(() => {
+            navigate('/login', { replace: true });
+          }, 3000);
         }
       } catch (error) {
         console.error('OAuth callback error:', error);
         setStatus('error');
-        setMessage(error.message || 'Authentication failed. Please try again.');
+        setMessage('Authentication failed. Redirecting to login...');
         
         // Redirect to login after a delay
         setTimeout(() => {
@@ -61,7 +58,7 @@ const AuthSuccess = () => {
     }
 
     processCallback();
-  }, [searchParams, handleOAuthCallback, navigate, isAuthenticated]);
+  }, [navigate, isAuthenticated]);
 
   const getIcon = () => {
     switch (status) {

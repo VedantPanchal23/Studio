@@ -4,13 +4,13 @@ const GoogleDriveService = require('../services/googleDriveService');
 const WorkspaceSyncService = require('../services/workspaceSyncService');
 const User = require('../models/User');
 const logger = require('../utils/logger');
-const { authenticateJWT } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 const { apiLimiter } = require('../middleware/security');
 
 const router = express.Router();
 
 // Apply authentication middleware to all routes
-router.use(authenticateJWT);
+router.use(authenticateFirebase);
 
 // Apply rate limiting
 router.use(apiLimiter);

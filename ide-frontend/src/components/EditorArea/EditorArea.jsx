@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X } from 'lucide-react';
 import { EditorPanel } from '../EditorPanel/EditorPanel';
 import useEditorStore from '../../store/editorStore';
@@ -47,10 +47,6 @@ const EditorArea = () => {
             default:
                 return '📄';
         }
-    };
-
-    const getFileName = (filePath) => {
-        return filePath.split('/').pop() || filePath;
     };
 
     if (!tabs || tabs.length === 0) {

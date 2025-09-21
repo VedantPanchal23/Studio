@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { AlertTriangle, Save, X } from 'lucide-react'
 import styles from './UnsavedChangesDialog.module.css'
 

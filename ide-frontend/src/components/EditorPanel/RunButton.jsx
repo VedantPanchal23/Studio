@@ -26,8 +26,7 @@ const RunButton = () => {
     createContainer,
     executeCodeWebSocket,
     stopExecution,
-    getContainerByLanguage,
-    getLanguageInfo
+    getContainerByLanguage
   } = useExecutionStore();
 
   const { activeFile, getFileContent } = useEditorStore();
@@ -35,9 +34,8 @@ const RunButton = () => {
 
   const [isCreatingContainer, setIsCreatingContainer] = useState(false);
 
-  // Get current container and language info
+  // Get current container
   const currentContainer = getContainerByLanguage(selectedLanguage);
-  const languageInfo = getLanguageInfo(selectedLanguage);
 
   /**
    * Detect language from file extension

@@ -52,7 +52,8 @@ describe('Icon Component', () => {
     render(<Icon name="Home" color="#ff0000" />);
     const icon = screen.getByTestId('icon-Home');
     
-    expect(icon).toHaveAttribute('color', '#ff0000');
+    // Check that the SVG has stroke set to the color
+    expect(icon).toHaveAttribute('stroke', '#ff0000');
   });
 
   it('supports accessibility attributes', () => {
@@ -68,7 +69,9 @@ describe('Icon Component', () => {
     render(<Icon name="NonExistentIcon" />);
     
     const icon = screen.getByTestId('icon-fallback-NonExistentIcon');
-    expect(icon).toHaveClass('fallback');
+    // Check for CSS Modules generated class name pattern
+    expect(icon).toHaveAttribute('class');
+    expect(icon.getAttribute('class')).toMatch(/fallback/);
     
     consoleSpy.mockRestore();
   });
@@ -80,7 +83,7 @@ describe('Icon Component', () => {
     render(<Icon name="NonExistentIcon" fallback={customFallback} />);
     
     const icon = screen.getByTestId('icon-fallback-NonExistentIcon');
-    expect(icon).toHaveAttribute('color', '#ff0000');
+    expect(icon).toHaveAttribute('stroke', '#ff0000');
     
     consoleSpy.mockRestore();
   });

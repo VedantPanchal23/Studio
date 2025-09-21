@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Play, Square, Settings, Terminal, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -21,7 +21,6 @@ const CodeExecution = () => {
     executionOutput,
     executionError,
     activeExecution,
-    containers,
     setSelectedLanguage,
     createContainer,
     executeCodeWebSocket,

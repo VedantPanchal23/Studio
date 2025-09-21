@@ -32,19 +32,21 @@ const createRateLimiter = (options = {}) => {
 };
 
 // General rate limiter
-const generalLimiter = createRateLimiter();
+const generalLimiter = createRateLimiter({
+  max: process.env.NODE_ENV === 'production' ? undefined : 10000 // Higher limit for dev and test
+});
 
 // Strict rate limiter for auth endpoints
 const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: process.env.NODE_ENV === 'production' ? 5 : 1000, // Allow more requests in dev and test
   message: 'Too many authentication attempts, please try again later.'
 });
 
 // API rate limiter
 const apiLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 1000 requests per windowMs
+  max: process.env.NODE_ENV === 'production' ? 1000 : 10000, // Higher limit for dev and test
   message: 'Too many API requests, please try again later.'
 });
 
@@ -365,7 +367,14 @@ const validateRequestSize = (maxSize = 10 * 1024 * 1024) => { // 10MB default
 // Content type validation middleware
 const validateContentType = (allowedTypes = ['application/json', 'multipart/form-data']) => {
   return (req, res, next) => {
+    // Skip validation for GET and DELETE requests
     if (req.method === 'GET' || req.method === 'DELETE') {
+      return next();
+    }
+    
+    // Skip validation for requests without body content
+    const contentLength = parseInt(req.get('Content-Length') || '0', 10);
+    if (contentLength === 0 && !req.get('Content-Type')) {
       return next();
     }
     
@@ -535,6 +544,7 @@ const auditLogger = (operation) => {
 
 module.exports = {
   // Rate limiting
+  createRateLimiter,
   generalLimiter,
   authLimiter,
   apiLimiter,

@@ -35,7 +35,7 @@ class CollaborationService {
    * @param {Object} options - Configuration options
    * @returns {Object} Document, provider, and awareness objects
    */
-  getDocument(documentId, workspaceId, filePath, options = {}) {
+  getDocument(documentId) {
     if (this.documents.has(documentId)) {
       return {
         doc: this.documents.get(documentId),
@@ -385,7 +385,7 @@ class CollaborationService {
    * Cleanup all documents and connections
    */
   cleanup() {
-    for (const [documentId, provider] of this.providers.entries()) {
+    for (const [, provider] of this.providers.entries()) {
       try {
         provider.disconnect()
         provider.destroy()
@@ -394,7 +394,7 @@ class CollaborationService {
       }
     }
 
-    for (const [documentId, awareness] of this.awareness.entries()) {
+    for (const [, awareness] of this.awareness.entries()) {
       try {
         awareness.destroy()
       } catch (error) {

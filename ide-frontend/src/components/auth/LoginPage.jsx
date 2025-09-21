@@ -36,9 +36,13 @@ const LoginPage = () => {
     clearError();
   }, [clearError]);
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     clearError();
-    loginWithGoogle();
+    setLocalError(null);
+    const result = await loginWithGoogle();
+    if (result.success) {
+      navigate('/ide');
+    }
   };
 
   const handleInputChange = (e) => {
@@ -57,7 +61,37 @@ const LoginPage = () => {
     const result = await login({ email: form.email, password: form.password });
     if (result.success) {
       navigate('/ide');
+    } else {
+      // Handle Firebase-specific error codes
+      const errorMessage = getFirebaseErrorMessage(result.message);
+      setLocalError(errorMessage);
     }
+  };
+
+  const getFirebaseErrorMessage = (errorMessage) => {
+    if (!errorMessage) return 'Login failed';
+    
+    // Firebase Auth error codes
+    if (errorMessage.includes('auth/user-not-found')) {
+      return 'No account found with this email address';
+    }
+    if (errorMessage.includes('auth/wrong-password')) {
+      return 'Incorrect password';
+    }
+    if (errorMessage.includes('auth/invalid-email')) {
+      return 'Invalid email address';
+    }
+    if (errorMessage.includes('auth/user-disabled')) {
+      return 'This account has been disabled';
+    }
+    if (errorMessage.includes('auth/too-many-requests')) {
+      return 'Too many failed attempts. Please try again later';
+    }
+    if (errorMessage.includes('auth/network-request-failed')) {
+      return 'Network error. Please check your connection';
+    }
+    
+    return errorMessage;
   };
 
   if (isLoading) {

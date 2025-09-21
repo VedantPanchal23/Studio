@@ -193,9 +193,8 @@ export class MonacoLSPIntegration {
    * Update document content in LSP server
    * @param {string} filePath - File path
    * @param {string} newContent - New content
-   * @param {string} oldContent - Old content
    */
-  updateDocument(filePath, newContent, oldContent) {
+  updateDocument(filePath, newContent) {
     try {
       const uri = lspService.pathToUri(filePath)
       
@@ -436,7 +435,7 @@ export class MonacoLSPIntegration {
    * @param {Object} context - Signature help context
    * @returns {Promise<Object>} Signature help
    */
-  async provideSignatureHelp(model, position, token, context) {
+  async provideSignatureHelp(model, position, token) {
     try {
       if (!this.activeUri || token?.isCancellationRequested) return null
 

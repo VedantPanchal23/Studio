@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, param, query, validationResult } = require('express-validator');
 
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateFirebase } = require('../middleware/firebaseAuth');
 const { Workspace } = require('../models');
 const gitManager = require('../utils/gitManager');
 const githubAPI = require('../utils/githubApi');
@@ -50,7 +50,7 @@ const checkWorkspaceAccess = async (req, res, next) => {
 
 // GET /api/git/:workspaceId/status - Get Git repository status
 router.get('/:workspaceId/status',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   async (req, res) => {
@@ -98,7 +98,7 @@ router.get('/:workspaceId/status',
 
 // POST /api/git/:workspaceId/init - Initialize Git repository
 router.post('/:workspaceId/init',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('userName').optional().isString().trim(),
   body('userEmail').optional().isEmail(),
@@ -150,7 +150,7 @@ router.post('/:workspaceId/init',
 
 // POST /api/git/:workspaceId/clone - Clone repository
 router.post('/:workspaceId/clone',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('repoUrl').isURL().withMessage('Valid repository URL is required'),
   body('branch').optional().isString().trim(),
@@ -205,7 +205,7 @@ router.post('/:workspaceId/clone',
 
 // POST /api/git/:workspaceId/add - Add files to staging area
 router.post('/:workspaceId/add',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('files').optional().isArray(),
   body('files.*').isString(),
@@ -246,7 +246,7 @@ router.post('/:workspaceId/add',
 
 // POST /api/git/:workspaceId/unstage - Remove files from staging area
 router.post('/:workspaceId/unstage',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('files').optional().isArray(),
   body('files.*').isString(),
@@ -287,7 +287,7 @@ router.post('/:workspaceId/unstage',
 
 // POST /api/git/:workspaceId/commit - Commit changes
 router.post('/:workspaceId/commit',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('message').isString().trim().isLength({ min: 1 }).withMessage('Commit message is required'),
   body('author').optional().isString(),
@@ -342,7 +342,7 @@ router.post('/:workspaceId/commit',
 
 // GET /api/git/:workspaceId/history - Get commit history
 router.get('/:workspaceId/history',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('since').optional().isISO8601(),
@@ -386,7 +386,7 @@ router.get('/:workspaceId/history',
 
 // GET /api/git/:workspaceId/branches - Get branch information
 router.get('/:workspaceId/branches',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   async (req, res) => {
@@ -421,7 +421,7 @@ router.get('/:workspaceId/branches',
 
 // POST /api/git/:workspaceId/branches - Create new branch
 router.post('/:workspaceId/branches',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('name').isString().trim().isLength({ min: 1 }).withMessage('Branch name is required'),
   body('startPoint').optional().isString(),
@@ -463,7 +463,7 @@ router.post('/:workspaceId/branches',
 
 // POST /api/git/:workspaceId/branches/switch - Switch branch
 router.post('/:workspaceId/branches/switch',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('name').isString().trim().isLength({ min: 1 }).withMessage('Branch name is required'),
   checkWorkspaceAccess,
@@ -503,7 +503,7 @@ router.post('/:workspaceId/branches/switch',
 
 // DELETE /api/git/:workspaceId/branches/:branchName - Delete branch
 router.delete('/:workspaceId/branches/:branchName',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   param('branchName').isString().trim().isLength({ min: 1 }).withMessage('Branch name is required'),
   query('force').optional().isBoolean(),
@@ -546,7 +546,7 @@ router.delete('/:workspaceId/branches/:branchName',
 
 // GET /api/git/:workspaceId/remotes - Get remote repositories
 router.get('/:workspaceId/remotes',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   checkWorkspaceAccess,
   async (req, res) => {
@@ -581,7 +581,7 @@ router.get('/:workspaceId/remotes',
 
 // POST /api/git/:workspaceId/remotes - Add remote repository
 router.post('/:workspaceId/remotes',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('name').isString().trim().isLength({ min: 1 }).withMessage('Remote name is required'),
   body('url').isURL().withMessage('Valid remote URL is required'),
@@ -623,7 +623,7 @@ router.post('/:workspaceId/remotes',
 
 // POST /api/git/:workspaceId/push - Push changes to remote
 router.post('/:workspaceId/push',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('remote').optional().isString(),
   body('branch').optional().isString(),
@@ -673,7 +673,7 @@ router.post('/:workspaceId/push',
 
 // POST /api/git/:workspaceId/pull - Pull changes from remote
 router.post('/:workspaceId/pull',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('remote').optional().isString(),
   body('branch').optional().isString(),
@@ -721,7 +721,7 @@ router.post('/:workspaceId/pull',
 
 // POST /api/git/:workspaceId/fetch - Fetch changes from remote
 router.post('/:workspaceId/fetch',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   body('remote').optional().isString(),
   body('all').optional().isBoolean(),
@@ -766,7 +766,7 @@ router.post('/:workspaceId/fetch',
 
 // GET /api/git/:workspaceId/diff - Get diff for files
 router.get('/:workspaceId/diff',
-  authenticateToken,
+  authenticateFirebase,
   param('workspaceId').isMongoId().withMessage('Invalid workspace ID'),
   query('staged').optional().isBoolean(),
   query('file').optional().isString(),
@@ -813,7 +813,7 @@ router.get('/:workspaceId/diff',
 
 // GET /api/git/github/user - Get authenticated GitHub user
 router.get('/github/user',
-  authenticateToken,
+  authenticateFirebase,
   async (req, res) => {
     try {
       const githubToken = req.user.githubToken;
@@ -837,7 +837,7 @@ router.get('/github/user',
 
 // GET /api/git/github/repositories - List user repositories
 router.get('/github/repositories',
-  authenticateToken,
+  authenticateFirebase,
   query('visibility').optional().isIn(['all', 'public', 'private']),
   query('sort').optional().isIn(['created', 'updated', 'pushed', 'full_name']),
   query('direction').optional().isIn(['asc', 'desc']),
@@ -879,7 +879,7 @@ router.get('/github/repositories',
 
 // POST /api/git/github/repositories - Create new repository
 router.post('/github/repositories',
-  authenticateToken,
+  authenticateFirebase,
   body('name').isString().trim().isLength({ min: 1 }).withMessage('Repository name is required'),
   body('description').optional().isString(),
   body('private').optional().isBoolean(),

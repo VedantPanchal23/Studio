@@ -113,14 +113,6 @@ const GitCloneDialog = ({ open, onOpenChange }) => {
     return false;
   };
 
-  const getSelectedRepoUrl = () => {
-    if (selectedRepo) {
-      const repo = githubRepositories.find(r => r.id.toString() === selectedRepo);
-      return repo?.clone_url || '';
-    }
-    return '';
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">

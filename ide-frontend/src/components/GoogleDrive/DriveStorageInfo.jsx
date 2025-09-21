@@ -92,13 +92,6 @@ const DriveStorageInfo = () => {
     return 'text-green-500';
   };
 
-  const getProgressColor = (percentage) => {
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 75) return 'bg-orange-500';
-    if (percentage >= 50) return 'bg-yellow-500';
-    return 'bg-green-500';
-  };
-
   return (
     <div className="space-y-4">
       {/* Storage Overview */}
