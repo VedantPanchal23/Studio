@@ -3,6 +3,11 @@ const UserService = require('./UserService');
 const WorkspaceService = require('./WorkspaceService');
 const ExecutionJobService = require('./ExecutionJobService');
 const lspService = require('./lspService');
+const terminalService = require('./terminal');
+const dockerService = require('./dockerService');
+const webSocketService = require('./websocket');
+const googleDriveService = require('./googleDriveService');
+const collaborationService = require('./collaborationService');
 
 // Create service instances
 const userService = new UserService();
@@ -16,5 +21,10 @@ module.exports = {
   userService,
   workspaceService,
   executionJobService,
-  lspService
+  lspService,
+  terminalService,
+  dockerService,
+  webSocketService,
+  googleDriveService,
+  collaborationService
 };

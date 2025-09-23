@@ -66,10 +66,10 @@ class FileValidation {
       '.o', '.obj', '.lib', '.a'
     ]);
 
-    // Dangerous file extensions that should be blocked
+    // Dangerous file extensions that should be blocked (removed .js, .bat, .cmd, .ps1 for development)
     this.dangerousExtensions = new Set([
-      '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.vbe',
-      '.js', '.jse', '.ws', '.wsf', '.wsc', '.wsh', '.ps1', '.ps1xml',
+      '.exe', '.com', '.pif', '.scr', '.vbs', '.vbe',
+      '.jse', '.ws', '.wsf', '.wsc', '.wsh', '.ps1xml',
       '.ps2', '.ps2xml', '.psc1', '.psc2', '.msh', '.msh1', '.msh2',
       '.mshxml', '.msh1xml', '.msh2xml', '.scf', '.lnk', '.inf',
       '.reg', '.dll', '.cpl', '.msc', '.msi', '.msp', '.mst'

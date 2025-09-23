@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
 import useExecutionStore from '../../stores/executionStore';
-import useEditorStore from '../../store/editorStore';
+import useEditorStore from '../../stores/editorStore';
 import useWorkspaceStore from '../../stores/workspaceStore';
 import styles from './CodeExecution.module.css';
 

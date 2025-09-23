@@ -19,19 +19,42 @@ const authenticateFirebase = async (req, res, next) => {
     try {
       // Create or get development user
       if (!global.__DEV_FIREBASE_USER__) {
-        let user = await User.findOne({ email: 'dev@firebase.test' });
+        let user = await User.findOne({ email: 'dev@localhost.com' });
         if (!user) {
           user = await User.create({
             firebaseUid: 'dev-firebase-uid',
-            email: 'dev@firebase.test',
-            name: 'Firebase Dev User',
+            email: 'dev@localhost.com',
+            name: 'Dev User',
             isVerified: true,
-            lastLogin: Date.now()
+            lastLogin: Date.now(),
+            preferences: {
+              theme: 'dark',
+              fontSize: 14,
+              keyBindings: 'vscode',
+              autoSave: true,
+              tabSize: 2
+            }
           });
+          logger.info('Created dev user for DISABLE_AUTH mode', { userId: user._id });
+        } else {
+          // Update last login
+          user.lastLogin = Date.now();
+          await user.save();
         }
         global.__DEV_FIREBASE_USER__ = user;
       }
       req.user = global.__DEV_FIREBASE_USER__;
+      // Ensure the user object has an id property for compatibility
+      if (!req.user.id && req.user._id) {
+        req.user.id = req.user._id.toString();
+      }
+      req.securityContext = {
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        requestId: req.requestId,
+        authTime: new Date(),
+        devMode: true
+      };
       return next();
     } catch (e) {
       logger.error('DISABLE_AUTH Firebase user bootstrap failed', { error: e.message });
@@ -47,21 +70,33 @@ const authenticateFirebase = async (req, res, next) => {
   const requestId = req.requestId;
 
   try {
-    // Check if IP is temporarily blocked
+    // Check if IP is temporarily blocked (skip blocking for localhost in development)
+    const isLocalhost = clientIP === '::1' || clientIP === '127.0.0.1' || clientIP === 'localhost';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
     const ipAttempts = failedAttempts.get(clientIP);
     if (ipAttempts && ipAttempts.blocked && (Date.now() - ipAttempts.lastAttempt) < 15 * 60 * 1000) {
-      logger.warn('Blocked IP attempted Firebase authentication', {
-        ip: clientIP,
-        userAgent,
-        requestId,
-        blockedSince: new Date(ipAttempts.lastAttempt)
-      });
+      // Skip blocking for localhost in development
+      if (isDevelopment && isLocalhost) {
+        logger.info('Bypassing IP block for localhost in development', {
+          ip: clientIP,
+          userAgent,
+          requestId
+        });
+      } else {
+        logger.warn('Blocked IP attempted Firebase authentication', {
+          ip: clientIP,
+          userAgent,
+          requestId,
+          blockedSince: new Date(ipAttempts.lastAttempt)
+        });
 
-      return res.status(429).json({
-        success: false,
-        message: 'Too many failed attempts. Please try again later.',
-        code: 'IP_BLOCKED'
-      });
+        return res.status(429).json({
+          success: false,
+          message: 'Too many failed attempts. Please try again later.',
+          code: 'IP_BLOCKED'
+        });
+      }
     }
 
     // Extract Firebase ID token from Authorization header
@@ -151,6 +186,10 @@ const authenticateFirebase = async (req, res, next) => {
 
     // Attach user and Firebase context to request
     req.user = user;
+    // Ensure the user object has an id property for compatibility
+    if (!req.user.id && req.user._id) {
+      req.user.id = req.user._id.toString();
+    }
     req.firebaseToken = decodedToken;
     req.securityContext = {
       ip: clientIP,

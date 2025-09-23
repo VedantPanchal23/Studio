@@ -10,7 +10,7 @@ import {
 } from '../ui/dropdown-menu';
 import { Badge } from '../ui/badge';
 import useExecutionStore from '../../stores/executionStore';
-import useEditorStore from '../../store/editorStore';
+import useEditorStore from '../../stores/editorStore';
 import useWorkspaceStore from '../../stores/workspaceStore';
 
 /**

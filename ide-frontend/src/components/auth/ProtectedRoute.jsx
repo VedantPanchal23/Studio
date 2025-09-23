@@ -14,20 +14,8 @@ const ProtectedRoute = ({ children, requireAuth = true }) => {
   const {
     isAuthenticated,
     isLoading,
-    authInitialized,
-    initializeAuth
+    authInitialized
   } = useAuthStore();
-
-  useEffect(() => {
-    if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
-      return;
-    }
-    
-    // Initialize auth state if not already initialized
-    if (!authInitialized) {
-      initializeAuth();
-    }
-  }, [initializeAuth, authInitialized]);
 
   // Show loading spinner while initializing
   if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
@@ -66,7 +54,7 @@ const ProtectedRoute = ({ children, requireAuth = true }) => {
 /**
  * Public route wrapper - redirects authenticated users away from auth pages
  */
-export const PublicRoute = ({ children, redirectTo = '/ide' }) => {
+export const PublicRoute = ({ children, redirectTo = '/workspaces' }) => {
   const { isAuthenticated, isLoading, authInitialized } = useAuthStore();
   
   if (import.meta.env.VITE_DISABLE_AUTH === 'true') return children;

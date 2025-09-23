@@ -6,7 +6,7 @@ import {
     Info,
     Bell
 } from 'lucide-react';
-import useEditorStore from '../../store/editorStore';
+import useEditorStore from '../../stores/editorStore';
 import './StatusBar.css';
 
 const StatusBar = () => {

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { IDELayout } from '../IDELayout/IDELayout';
 import { WorkspaceDashboard } from '../WorkspaceManager';
 import {
@@ -12,6 +12,19 @@ import {
 } from '../auth';
 import './App.css';
 import useAuthStore from '../../stores/authStore';
+
+// Wrapper component to use useNavigate hook
+const WorkspaceWrapper = () => {
+  const navigate = useNavigate();
+  
+  return (
+    <ProtectedRoute>
+      <WorkspaceDashboard onWorkspaceSelect={(workspace) => {
+        navigate(`/ide?workspace=${workspace._id}`);
+      }} />
+    </ProtectedRoute>
+  );
+};
 
 function App() {
   const { initializeAuth } = useAuthStore();
@@ -55,13 +68,7 @@ function App() {
           {/* Protected routes */}
           <Route
             path="/workspaces"
-            element={
-              <ProtectedRoute>
-                <WorkspaceDashboard onWorkspaceSelect={(workspace) => {
-                  window.location.href = `/ide?workspace=${workspace._id}`;
-                }} />
-              </ProtectedRoute>
-            }
+            element={<WorkspaceWrapper />}
           />
 
           <Route
@@ -76,7 +83,7 @@ function App() {
           {/* Default redirect */}
           <Route
             path="/"
-            element={<Navigate to="/workspaces" replace />}
+            element={<Navigate to={import.meta.env.VITE_DISABLE_AUTH === 'true' ? "/workspaces" : "/login"} replace />}
           />
 
           {/* Catch all - redirect to login */}

@@ -34,9 +34,28 @@ const useAuthStore = create(
 
       // Initialize Firebase auth state listener
       initializeAuth: async () => {
+        // Prevent multiple initializations
+        const state = get();
+        if (state.authInitialized || state.isLoading) {
+          return;
+        }
+
         if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
+          // Create dev token if it doesn't exist
+          let devToken = localStorage.getItem('devToken');
+          if (!devToken) {
+            devToken = 'dev-token-' + Date.now();
+            localStorage.setItem('devToken', devToken);
+          }
+          
           set({
-            user: { id: 'dev-user', email: 'dev@local.test', name: 'Dev User' },
+            user: { 
+              id: '68d18ca85458d5451fc8c2d2', // Use the dev user ID from backend logs
+              email: 'dev@localhost.com', 
+              name: 'Dev User',
+              avatar: null,
+              preferences: { theme: 'dark' }
+            },
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -48,11 +67,29 @@ const useAuthStore = create(
         try {
           set({ isLoading: true, error: null });
 
+          // Check for Google redirect result first
+          try {
+            const redirectResult = await authAPI.handleGoogleRedirectResult();
+            if (redirectResult.success && !redirectResult.noResult) {
+              set({
+                user: redirectResult.data.user,
+                firebaseUser: redirectResult.data.firebaseUser,
+                isAuthenticated: true,
+                isLoading: false,
+                authInitialized: true
+              });
+              return;
+            }
+          } catch (redirectError) {
+            console.error('Google redirect result error:', redirectError);
+            // Continue with normal auth flow
+          }
+
           // Set up Firebase auth state listener
           const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             try {
               if (firebaseUser) {
-                // User is signed in
+                // User is signed in to Firebase
                 set({ firebaseUser });
                 
                 // Get or sync user data with backend
@@ -64,24 +101,40 @@ const useAuthStore = create(
                     firebaseUser,
                     isAuthenticated: true,
                     isLoading: false,
-                    authInitialized: true
+                    authInitialized: true,
+                    error: null
                   });
                 } else {
-                  throw new Error('Failed to sync user data with backend');
+                  // Backend doesn't recognize the user - sign out from Firebase
+                  console.log('Backend authentication failed, signing out from Firebase');
+                  await auth.signOut();
+                  set({
+                    user: null,
+                    firebaseUser: null,
+                    isAuthenticated: false,
+                    isLoading: false,
+                    authInitialized: true,
+                    error: 'Authentication failed'
+                  });
                 }
               } else {
-                // User is signed out
+                // User is signed out from Firebase
                 set({
                   user: null,
                   firebaseUser: null,
                   isAuthenticated: false,
                   isLoading: false,
-                  authInitialized: true
+                  authInitialized: true,
+                  error: null
                 });
               }
             } catch (error) {
               console.error('Auth state change error:', error);
+              // Always ensure user is signed out if there's an error
               set({
+                user: null,
+                firebaseUser: null,
+                isAuthenticated: false,
                 error: error.message || 'Authentication error',
                 isLoading: false,
                 authInitialized: true
@@ -111,6 +164,11 @@ const useAuthStore = create(
           const response = await authAPI.loginWithGoogle();
           
           if (response.success) {
+            if (response.redirect) {
+              // Redirect is happening, don't update state yet
+              return { success: true, redirect: true };
+            }
+            
             set({
               user: response.data.user,
               firebaseUser: response.data.firebaseUser,
@@ -128,6 +186,7 @@ const useAuthStore = create(
 
       // Email/password signup
       signup: async ({ name, email, password }) => {
+        console.log('Auth store signup called with:', { name, email, password: '***' });
         if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
           set({ user: { id: 'dev-user', email, name }, isAuthenticated: true });
           return { success: true };
@@ -135,7 +194,9 @@ const useAuthStore = create(
         
         try {
           set({ isLoading: true, error: null });
+          console.log('Calling authAPI.signup...');
           const response = await authAPI.signup({ name, email, password });
+          console.log('Auth API response:', response);
           
           if (response.success) {
             set({
@@ -148,6 +209,7 @@ const useAuthStore = create(
           }
           throw new Error(response.message || 'Signup failed');
         } catch (error) {
+          console.error('Signup error in store:', error);
           set({ error: error.message || 'Signup failed', isLoading: false });
           return { success: false, message: error.message };
         }

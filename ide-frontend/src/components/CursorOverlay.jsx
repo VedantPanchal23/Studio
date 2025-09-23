@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 
 /**
  * Cursor overlay component for displaying remote user cursors
@@ -6,55 +6,31 @@ import React, { useEffect, useState, useRef } from 'react'
 const CursorOverlay = ({ cursors, editorRef, monacoRef }) => {
   const [cursorElements, setCursorElements] = useState([])
   const overlayRef = useRef(null)
+  const updateTimeoutRef = useRef(null)
 
-  useEffect(() => {
-    if (!editorRef.current || !monacoRef.current || !overlayRef.current) {
-      return
+  // Debounced position calculation
+  const calculatePositions = useCallback(() => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current)
     }
 
-    const editor = editorRef.current
-
-    // Calculate cursor positions
-    const newCursorElements = cursors.map(cursor => {
-      try {
-        // Get pixel position for the cursor
-        const position = editor.getScrolledVisiblePosition({
-          lineNumber: cursor.line,
-          column: cursor.column
-        })
-
-        if (!position) {
-          return null
-        }
-
-        return {
-          id: cursor.userId,
-          user: cursor.user,
-          color: cursor.color,
-          x: position.left,
-          y: position.top,
-          line: cursor.line,
-          column: cursor.column
-        }
-      } catch (error) {
-        console.warn('Failed to calculate cursor position:', error)
-        return null
+    updateTimeoutRef.current = setTimeout(() => {
+      if (!editorRef.current || !monacoRef.current || !overlayRef.current || !cursors.length) {
+        setCursorElements([])
+        return
       }
-    }).filter(Boolean)
 
-    setCursorElements(newCursorElements)
-  }, [cursors, editorRef, monacoRef])
+      const editor = editorRef.current
 
-  // Update positions on scroll or resize
-  useEffect(() => {
-    if (!editorRef.current) return
-
-    const editor = editorRef.current
-
-    const updatePositions = () => {
-      // Recalculate positions when editor scrolls or resizes
+      // Calculate cursor positions
       const newCursorElements = cursors.map(cursor => {
         try {
+          // Validate cursor data
+          if (!cursor.line || !cursor.column || !cursor.userId || !cursor.user) {
+            return null
+          }
+
+          // Get pixel position for the cursor
           const position = editor.getScrolledVisiblePosition({
             lineNumber: cursor.line,
             column: cursor.column
@@ -64,31 +40,64 @@ const CursorOverlay = ({ cursors, editorRef, monacoRef }) => {
             return null
           }
 
+          // Ensure position is within editor bounds
+          const editorDom = editor.getDomNode()
+          if (!editorDom) return null
+
+          const editorRect = editorDom.getBoundingClientRect()
+          const isVisible = position.left >= 0 && 
+                           position.top >= 0 && 
+                           position.left <= editorRect.width && 
+                           position.top <= editorRect.height
+
+          if (!isVisible) return null
+
           return {
             id: cursor.userId,
             user: cursor.user,
-            color: cursor.color,
+            color: cursor.color || '#007ACC',
             x: position.left,
             y: position.top,
             line: cursor.line,
             column: cursor.column
           }
-        } catch {
+        } catch (error) {
+          console.warn('Failed to calculate cursor position:', error)
           return null
         }
       }).filter(Boolean)
 
       setCursorElements(newCursorElements)
-    }
+    }, 16) // ~60fps
+  }, [cursors, editorRef, monacoRef])
 
-    const scrollDisposable = editor.onDidScrollChange(updatePositions)
-    const layoutDisposable = editor.onDidLayoutChange(updatePositions)
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    calculatePositions()
+  }, [calculatePositions])
+
+  // Update positions on scroll or resize
+  useEffect(() => {
+    if (!editorRef.current) return
+
+    const editor = editorRef.current
+
+    const scrollDisposable = editor.onDidScrollChange(calculatePositions)
+    const layoutDisposable = editor.onDidLayoutChange(calculatePositions)
 
     return () => {
       scrollDisposable.dispose()
       layoutDisposable.dispose()
     }
-  }, [cursors, editorRef])
+  }, [calculatePositions, editorRef])
 
   return (
     <div
@@ -99,22 +108,30 @@ const CursorOverlay = ({ cursors, editorRef, monacoRef }) => {
       {cursorElements.map(cursor => (
         <div
           key={cursor.id}
-          className="absolute"
+          className="absolute transition-all duration-150 ease-out"
           style={{
             left: cursor.x,
             top: cursor.y,
-            transform: 'translateX(-1px)'
+            transform: 'translateX(-1px)',
+            zIndex: 1000
           }}
         >
           {/* Cursor line */}
           <div
-            className="w-0.5 h-5 relative"
+            className="w-0.5 h-5 relative animate-pulse"
             style={{ backgroundColor: cursor.color }}
           >
             {/* User label */}
             <div
-              className="absolute -top-6 left-0 text-xs text-white px-2 py-1 rounded whitespace-nowrap"
-              style={{ backgroundColor: cursor.color }}
+              className="absolute -top-7 left-0 text-xs text-white px-2 py-1 rounded-md whitespace-nowrap shadow-lg opacity-90 hover:opacity-100 transition-opacity"
+              style={{ 
+                backgroundColor: cursor.color,
+                fontSize: '11px',
+                maxWidth: '120px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+              title={`${cursor.user.name} (Line ${cursor.line}, Column ${cursor.column})`}
             >
               {cursor.user.name}
             </div>
@@ -124,7 +141,8 @@ const CursorOverlay = ({ cursors, editorRef, monacoRef }) => {
               className="absolute -top-1 -left-1 w-3 h-3"
               style={{
                 backgroundColor: cursor.color,
-                clipPath: 'polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%)'
+                clipPath: 'polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%)',
+                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))'
               }}
             />
           </div>

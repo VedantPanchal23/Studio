@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react'
 import { X, Plus, Save, RefreshCw, AlertCircle, FileText } from 'lucide-react'
 import Editor from '@monaco-editor/react'
-import useEditorStore from '../../store/editorStore'
+import useEditorStore from '../../stores/editorStore'
 import { UnsavedChangesDialog } from '../ui/UnsavedChangesDialog'
 import RunButton from './RunButton'
 import { monacoLSPIntegration } from './MonacoLSPIntegration'

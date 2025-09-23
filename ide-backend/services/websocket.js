@@ -51,6 +51,28 @@ class WebSocketService {
    */
   async authenticateSocket(socket, next) {
     try {
+      // Development bypass option
+      if (process.env.DISABLE_AUTH === 'true') {
+        // Use the global dev user for WebSocket connections
+        let user = await User.findOne({ email: 'dev@localhost.com' });
+        if (!user) {
+          logger.error('Dev user not found for WebSocket connection');
+          return next(new Error('Dev user not found'));
+        }
+
+        // Attach user to socket
+        socket.user = user;
+        socket.userId = user._id.toString();
+        
+        logger.info('Socket authenticated in dev mode', {
+          socketId: socket.id,
+          userId: user._id,
+          email: user.email
+        });
+
+        return next();
+      }
+
       const token = socket.handshake.auth.token || socket.handshake.query.token;
       
       if (!token) {

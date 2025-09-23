@@ -1,0 +1,43 @@
+{
+  "servers": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "languages": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+      "enabled": false,
+      "optional": true
+    },
+    "python": {
+      "command": "pylsp",
+      "args": [],
+      "languages": ["python"],
+      "enabled": false,
+      "optional": true
+    },
+    "html": {
+      "command": "vscode-html-language-server",
+      "args": ["--stdio"],
+      "languages": ["html"],
+      "enabled": false,
+      "optional": true
+    },
+    "css": {
+      "command": "vscode-css-language-server",
+      "args": ["--stdio"],
+      "languages": ["css", "scss", "less"],
+      "enabled": false,
+      "optional": true
+    },
+    "json": {
+      "command": "vscode-json-language-server",
+      "args": ["--stdio"],
+      "languages": ["json"],
+      "enabled": false,
+      "optional": true
+    }
+  },
+  "fallback": {
+    "enabled": true,
+    "languages": ["markdown", "plaintext", "javascript", "typescript", "python", "html", "css", "json"]
+  }
+}

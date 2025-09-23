@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { EditorPanel } from '../EditorPanel/EditorPanel';
-import useEditorStore from '../../store/editorStore';
+import useEditorStore from '../../stores/editorStore';
 import './EditorArea.css';
 
 const EditorArea = () => {

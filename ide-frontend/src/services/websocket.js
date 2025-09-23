@@ -24,7 +24,10 @@ class WebSocketService {
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: this.reconnectDelay,
-      auth: import.meta.env.VITE_DISABLE_AUTH === 'true' ? {} : {
+      auth: import.meta.env.VITE_DISABLE_AUTH === 'true' ? {
+        // In dev mode, use dev token or empty auth
+        token: localStorage.getItem('devToken') || 'dev-bypass'
+      } : {
         // Add authentication token if available and auth is enabled
         token: localStorage.getItem('token')
       }

@@ -6,7 +6,7 @@ import EditorArea from '../EditorArea/EditorArea'
 import { Terminal } from '../Terminal/Terminal'
 import StatusBar from '../StatusBar/StatusBar'
 import CodeExecution from '../CodeExecution'
-import useEditorStore from '../../store/editorStore'
+import useEditorStore from '../../stores/editorStore'
 import { useWorkspaceStore } from '../../stores/workspaceStore'
 import './IDELayout.css'
 
@@ -23,25 +23,23 @@ export function IDELayout() {
     document.documentElement.setAttribute('data-theme', 'dark')
   }, [])
 
-  // For development mode, use a simple workspace initialization
+  // Handle workspace initialization
   useEffect(() => {
-    // In development mode with auth disabled, always use an existing test workspace
-    if (import.meta.env.VITE_DISABLE_AUTH === 'true') {
-      // Clear any cached workspace data that might have the old demo workspace ID
-      try {
-        localStorage.removeItem('workspace-store'); // Clear the entire cache for clean start
-        localStorage.removeItem('file-store'); // Also clear file store cache if it exists
-      } catch (e) {
-        console.warn('Could not clear workspace cache:', e);
-      }
-      
-      // Set the test workspace
-      useWorkspaceStore.getState().setCurrentWorkspace('test-workspace-123');
-    } else if (!currentWorkspaceId) {
-      // Only set default in non-dev mode if no workspace is set
-      useWorkspaceStore.getState().setCurrentWorkspace('test-workspace-123');
+    // Check if workspace ID is provided in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const workspaceIdFromUrl = urlParams.get('workspace');
+    
+    if (workspaceIdFromUrl && workspaceIdFromUrl !== currentWorkspaceId) {
+      // Set workspace from URL parameter
+      console.log('Setting workspace from URL:', workspaceIdFromUrl);
+      useWorkspaceStore.getState().setCurrentWorkspace(workspaceIdFromUrl);
+    } else if (!currentWorkspaceId && !workspaceIdFromUrl) {
+      // No workspace set and no URL parameter, redirect to workspace manager
+      console.log('No workspace set: redirecting to workspace manager');
+      window.location.href = '/workspaces';
+      return;
     }
-  }, [currentWorkspaceId]) // Include currentWorkspaceId dependency
+  }, [currentWorkspaceId])
 
   const handleFileOpen = (filePath, fileName) => {
     openFile(filePath, fileName)

@@ -6,7 +6,7 @@ import {
   MoreHorizontal 
 } from 'lucide-react'
 import { useFileStore } from '../../stores/fileStore'
-import useEditorStore from '../../store/editorStore'
+import useEditorStore from '../../stores/editorStore'
 
 export function FileTreeItem({
   items,

@@ -3,6 +3,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider, 
   signOut,
   updateProfile
@@ -87,23 +89,28 @@ export const authAPI = {
    * @returns {Promise<Object>} Firebase user and custom token
    */
   signup: async (data) => {
+    console.log('AuthAPI signup called with:', { ...data, password: '***' });
     try {
       const { name, email, password } = data;
       
+      console.log('Creating Firebase user...');
       // Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('Firebase user created:', user.uid);
       
       // Update user profile with name
       await updateProfile(user, {
         displayName: name
       });
+      console.log('Profile updated with name');
       
       // Get ID token for backend communication
       const idToken = await user.getIdToken();
+      console.log('Got ID token, calling backend...');
       
       // Register user with backend
-      const response = await api.post('/api/auth/firebase/register', {
+      const response = await api.post('/auth/firebase/register', {
         idToken,
         userData: {
           name,
@@ -111,6 +118,11 @@ export const authAPI = {
           photoURL: user.photoURL
         }
       });
+      console.log('Backend response:', response.data);
+      
+      if (!response || !response.data || !response.data.user) {
+        throw new Error('Invalid response from backend');
+      }
       
       return {
         success: true,
@@ -121,9 +133,40 @@ export const authAPI = {
       };
     } catch (error) {
       console.error('Firebase signup failed:', error);
+      
+      // Handle specific Firebase errors with user-friendly messages
+      let errorMessage = 'Signup failed';
+      let errorCode = 'SIGNUP_ERROR';
+      
+      switch (error.code) {
+        case 'auth/operation-not-allowed':
+          errorMessage = 'Email/password authentication is not enabled. Please contact support or try Google login.';
+          errorCode = 'AUTH_METHOD_DISABLED';
+          break;
+        case 'auth/email-already-in-use':
+          errorMessage = 'An account with this email already exists. Please try logging in instead.';
+          errorCode = 'EMAIL_EXISTS';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address format.';
+          errorCode = 'INVALID_EMAIL';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password is too weak. Please choose a stronger password.';
+          errorCode = 'WEAK_PASSWORD';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many attempts. Please try again later.';
+          errorCode = 'TOO_MANY_REQUESTS';
+          break;
+        default:
+          errorMessage = error.message || 'Signup failed';
+          errorCode = error.code || 'SIGNUP_ERROR';
+      }
+      
       throw {
-        message: error.message || 'Signup failed',
-        code: error.code || 'SIGNUP_ERROR'
+        message: errorMessage,
+        code: errorCode
       };
     }
   },
@@ -145,9 +188,13 @@ export const authAPI = {
       const idToken = await user.getIdToken();
       
       // Authenticate with backend
-      const response = await api.post('/api/auth/firebase/login', {
+      const response = await api.post('/auth/firebase/login', {
         idToken
       });
+      
+      if (!response || !response.data || !response.data.user) {
+        throw new Error('Invalid response from backend');
+      }
       
       return {
         success: true,
@@ -158,43 +205,140 @@ export const authAPI = {
       };
     } catch (error) {
       console.error('Firebase login failed:', error);
+      
+      // Handle specific Firebase errors with user-friendly messages
+      let errorMessage = 'Login failed';
+      let errorCode = 'LOGIN_ERROR';
+      
+      switch (error.code) {
+        case 'auth/operation-not-allowed':
+          errorMessage = 'Email/password authentication is not enabled. Please contact support or try Google login.';
+          errorCode = 'AUTH_METHOD_DISABLED';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled. Please contact support.';
+          errorCode = 'USER_DISABLED';
+          break;
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email address.';
+          errorCode = 'USER_NOT_FOUND';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Incorrect password. Please try again.';
+          errorCode = 'WRONG_PASSWORD';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address format.';
+          errorCode = 'INVALID_EMAIL';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Please try again later.';
+          errorCode = 'TOO_MANY_REQUESTS';
+          break;
+        default:
+          errorMessage = error.message || 'Login failed';
+          errorCode = error.code || 'LOGIN_ERROR';
+      }
+      
       throw {
-        message: error.message || 'Login failed',
-        code: error.code || 'LOGIN_ERROR'
+        message: errorMessage,
+        code: errorCode
       };
     }
   },
 
   /**
-   * Sign in with Google using Firebase
+   * Sign in with Google using Firebase (redirect method to avoid COOP issues)
    * @returns {Promise<Object>} Firebase user and backend user data
    */
   loginWithGoogle: async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
+      provider.addScope('email');
+      provider.addScope('profile');
       
-      // Get ID token for backend communication
-      const idToken = await user.getIdToken();
-      
-      // Authenticate with backend
-      const response = await api.post('/api/auth/firebase/login', {
-        idToken
-      });
-      
-      return {
-        success: true,
-        data: {
-          user: response.data.user,
-          firebaseUser: user
+      // Try popup first, fallback to redirect if COOP issues
+      try {
+        const userCredential = await signInWithPopup(auth, provider);
+        const user = userCredential.user;
+        
+        // Get ID token for backend communication
+        const idToken = await user.getIdToken();
+        
+        // Authenticate with backend
+        const response = await api.post('/auth/firebase/login', {
+          idToken
+        });
+        
+        if (!response || !response.data || !response.data.user) {
+          throw new Error('Invalid response from backend');
         }
-      };
+        
+        return {
+          success: true,
+          data: {
+            user: response.data.user,
+            firebaseUser: user
+          }
+        };
+      } catch (popupError) {
+        // If popup fails due to COOP or other issues, use redirect
+        if (popupError.code === 'auth/popup-blocked' || 
+            popupError.code === 'auth/popup-closed-by-user' ||
+            popupError.message.includes('Cross-Origin-Opener-Policy')) {
+          
+          console.log('Popup blocked or COOP issue, using redirect...');
+          await signInWithRedirect(auth, provider);
+          // The redirect will take over, so we don't return here
+          return { success: true, redirect: true };
+        }
+        throw popupError;
+      }
     } catch (error) {
       console.error('Google login failed:', error);
       throw {
         message: error.message || 'Google login failed',
         code: error.code || 'GOOGLE_LOGIN_ERROR'
+      };
+    }
+  },
+
+  /**
+   * Handle redirect result from Google login
+   * @returns {Promise<Object>} Firebase user and backend user data
+   */
+  handleGoogleRedirectResult: async () => {
+    try {
+      const result = await getRedirectResult(auth);
+      if (result) {
+        const user = result.user;
+        
+        // Get ID token for backend communication
+        const idToken = await user.getIdToken();
+        
+        // Authenticate with backend
+        const response = await api.post('/auth/firebase/login', {
+          idToken
+        });
+        
+        if (!response || !response.data || !response.data.user) {
+          throw new Error('Invalid response from backend');
+        }
+        
+        return {
+          success: true,
+          data: {
+            user: response.data.user,
+            firebaseUser: user
+          }
+        };
+      }
+      return { success: false, noResult: true };
+    } catch (error) {
+      console.error('Google redirect result failed:', error);
+      throw {
+        message: error.message || 'Google redirect login failed',
+        code: error.code || 'GOOGLE_REDIRECT_ERROR'
       };
     }
   },
@@ -228,11 +372,15 @@ export const authAPI = {
       }
       
       const idToken = await firebaseUser.getIdToken();
-      const response = await api.get('/api/auth/me', {
+      const response = await api.get('/auth/me', {
         headers: {
           Authorization: `Bearer ${idToken}`
         }
       });
+      
+      if (!response || !response.data || !response.data.user) {
+        throw new Error('Invalid response from backend - missing user data');
+      }
       
       return {
         success: true,

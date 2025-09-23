@@ -26,6 +26,7 @@ const SignupPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Signup form submitted:', form);
         setLocalError(null);
         clearError();
         if (!form.name || !form.email || !form.password) {
@@ -36,9 +37,11 @@ const SignupPage = () => {
             setLocalError('Password must be at least 8 characters');
             return;
         }
+        console.log('Calling signup function...');
         const result = await signup(form);
+        console.log('Signup result:', result);
         if (result.success) {
-            navigate('/ide');
+            navigate('/workspaces');
         } else {
             // Handle Firebase-specific error codes
             const errorMessage = getFirebaseErrorMessage(result.message);
@@ -88,18 +91,49 @@ const SignupPage = () => {
                         )}
                         <form onSubmit={handleSubmit} className="auth-form">
                             <div className="form-group">
-                                <label>Name</label>
-                                <input name="name" value={form.name} onChange={handleChange} placeholder="Your name" />
+                                <label htmlFor="name">Name</label>
+                                <input 
+                                    id="name"
+                                    name="name" 
+                                    value={form.name} 
+                                    onChange={handleChange} 
+                                    placeholder="Your name" 
+                                    required
+                                />
                             </div>
                             <div className="form-group">
-                                <label>Email</label>
-                                <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="you@example.com" />
+                                <label htmlFor="email">Email</label>
+                                <input 
+                                    id="email"
+                                    name="email" 
+                                    type="email" 
+                                    value={form.email} 
+                                    onChange={handleChange} 
+                                    placeholder="you@example.com" 
+                                    required
+                                />
                             </div>
                             <div className="form-group">
-                                <label>Password</label>
-                                <input name="password" type="password" value={form.password} onChange={handleChange} placeholder="••••••••" />
+                                <label htmlFor="password">Password</label>
+                                <input 
+                                    id="password"
+                                    name="password" 
+                                    type="password" 
+                                    value={form.password} 
+                                    onChange={handleChange} 
+                                    placeholder="••••••••" 
+                                    required
+                                    minLength="8"
+                                />
                             </div>
-                            <Button type="submit" disabled={isLoading} className="login-button">
+                            <Button 
+                                type="submit" 
+                                disabled={isLoading} 
+                                className="login-button"
+                                onClick={(e) => {
+                                    console.log('Button clicked!', e);
+                                }}
+                            >
                                 {isLoading ? <Loader2 className="button-icon animate-spin" /> : 'Sign Up'}
                             </Button>
                         </form>

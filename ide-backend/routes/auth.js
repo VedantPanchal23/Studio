@@ -189,6 +189,234 @@ router.get('/verify-token', authenticateFirebase, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/auth/me
+ * @desc    Get current authenticated user (alias for profile)
+ * @access  Private (Firebase Auth)
+ */
+router.get('/me', authenticateFirebase, async (req, res) => {
+  try {
+    const user = req.user;
+
+    res.json({
+      success: true,
+      message: 'User data retrieved successfully',
+      data: {
+        user: {
+          id: user._id,
+          firebaseUid: user.firebaseUid,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          preferences: user.preferences,
+          lastLogin: user.lastLogin,
+          isAdmin: user.isAdmin,
+          isVerified: user.isVerified,
+          createdAt: user.createdAt
+        }
+      }
+    });
+
+  } catch (error) {
+    logger.error('Get current user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user data'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/auth/firebase/login
+ * @desc    Firebase login with ID token
+ * @access  Public
+ */
+router.post('/firebase/login', async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Firebase ID token is required'
+      });
+    }
+
+    // Verify the Firebase ID token
+    const { verifyIdToken, getFirebaseUser } = require('../config/firebase');
+    const decodedToken = await verifyIdToken(idToken);
+    
+    if (!decodedToken || !decodedToken.uid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Firebase ID token'
+      });
+    }
+
+    // Get Firebase user details
+    const firebaseUser = await getFirebaseUser(decodedToken.uid);
+    
+    // Create or update user in our database
+    const user = await User.createFromFirebase(firebaseUser, decodedToken);
+    
+    logger.info('Firebase user logged in successfully', {
+      userId: user._id,
+      firebaseUid: decodedToken.uid,
+      email: user.email
+    });
+
+    res.json({
+      success: true,
+      message: 'Firebase login successful',
+      data: {
+        user: {
+          id: user._id,
+          firebaseUid: user.firebaseUid,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          preferences: user.preferences,
+          isVerified: user.isVerified,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt
+        }
+      }
+    });
+
+  } catch (error) {
+    logger.error('Firebase login error:', error);
+    
+    if (error.code === 'auth/id-token-expired') {
+      return res.status(401).json({
+        success: false,
+        message: 'Firebase token has expired',
+        code: 'TOKEN_EXPIRED'
+      });
+    }
+
+    if (error.code === 'auth/id-token-revoked') {
+      return res.status(401).json({
+        success: false,
+        message: 'Firebase token has been revoked',
+        code: 'TOKEN_REVOKED'
+      });
+    }
+
+    if (error.code === 'auth/invalid-id-token') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Firebase token',
+        code: 'INVALID_TOKEN'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Firebase login failed'
+    });
+  }
+});
+
+/**
+ * @route   POST /api/auth/firebase/register
+ * @desc    Firebase registration with ID token
+ * @access  Public
+ */
+router.post('/firebase/register', async (req, res) => {
+  try {
+    const { idToken, userData } = req.body;
+    
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Firebase ID token is required'
+      });
+    }
+
+    // Verify the Firebase ID token
+    const { verifyIdToken, getFirebaseUser } = require('../config/firebase');
+    const decodedToken = await verifyIdToken(idToken);
+    
+    if (!decodedToken || !decodedToken.uid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Firebase ID token'
+      });
+    }
+
+    // Get Firebase user details
+    const firebaseUser = await getFirebaseUser(decodedToken.uid);
+    
+    // Create user in our database with additional data
+    const user = await User.createFromFirebase(firebaseUser, decodedToken, userData);
+    
+    logger.info('Firebase user registered successfully', {
+      userId: user._id,
+      firebaseUid: decodedToken.uid,
+      email: user.email
+    });
+
+    res.json({
+      success: true,
+      message: 'Firebase registration successful',
+      data: {
+        user: {
+          id: user._id,
+          firebaseUid: user.firebaseUid,
+          email: user.email,
+          name: user.name,
+          avatar: user.avatar,
+          preferences: user.preferences,
+          isVerified: user.isVerified,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt
+        }
+      }
+    });
+
+  } catch (error) {
+    logger.error('Firebase registration error:', error);
+    
+    if (error.code === 'auth/id-token-expired') {
+      return res.status(401).json({
+        success: false,
+        message: 'Firebase token has expired',
+        code: 'TOKEN_EXPIRED'
+      });
+    }
+
+    if (error.code === 'auth/id-token-revoked') {
+      return res.status(401).json({
+        success: false,
+        message: 'Firebase token has been revoked',
+        code: 'TOKEN_REVOKED'
+      });
+    }
+
+    if (error.code === 'auth/invalid-id-token') {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Firebase token',
+        code: 'INVALID_TOKEN'
+      });
+    }
+
+    // Handle duplicate email error
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email address already registered',
+        code: 'EMAIL_EXISTS'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Firebase registration failed'
+    });
+  }
+});
+
+/**
  * @route   GET /api/auth/failure
  * @desc    Handle authentication failure
  * @access  Public

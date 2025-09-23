@@ -1,39 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
-
-// Create axios instance with default config
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 30000, // 30 seconds
-});
-
-// Add request interceptor to include auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor to handle errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+import { api } from './api';
 
 /**
  * File API service for managing workspace files
@@ -47,9 +12,9 @@ export class FileAPI {
    */
   static async listFiles(workspaceId, path = '') {
     try {
-      const response = await apiClient.get(`/files/${workspaceId}`, {
-        params: path ? { path } : {}
-      });
+      // If no path specified, list root directory
+      const url = path ? `/files/${workspaceId}/${path}` : `/files/${workspaceId}`;
+      const response = await api.get(url);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to list files');
@@ -64,7 +29,7 @@ export class FileAPI {
    */
   static async getFile(workspaceId, filePath) {
     try {
-      const response = await apiClient.get(`/files/${workspaceId}/${filePath}`);
+      const response = await api.get(`/files/${workspaceId}/${filePath}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to get file');
@@ -81,7 +46,7 @@ export class FileAPI {
    */
   static async saveFile(workspaceId, filePath, content, language = null) {
     try {
-      const response = await apiClient.put(`/files/${workspaceId}/${filePath}`, {
+      const response = await api.put(`/files/${workspaceId}/${filePath}`, {
         content,
         language
       });
@@ -101,7 +66,7 @@ export class FileAPI {
    */
   static async createItem(workspaceId, path, type, content = '') {
     try {
-      const response = await apiClient.post(`/files/${workspaceId}/create`, {
+      const response = await api.post(`/files/${workspaceId}/create`, {
         path,
         type,
         content
@@ -120,7 +85,7 @@ export class FileAPI {
    */
   static async deleteItem(workspaceId, filePath) {
     try {
-      const response = await apiClient.delete(`/files/${workspaceId}/${filePath}`);
+      const response = await api.delete(`/files/${workspaceId}/${filePath}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Failed to delete item');
@@ -136,7 +101,7 @@ export class FileAPI {
    */
   static async moveItem(workspaceId, from, to) {
     try {
-      const response = await apiClient.post(`/files/${workspaceId}/move`, {
+      const response = await api.post(`/files/${workspaceId}/move`, {
         from,
         to
       });
@@ -155,7 +120,7 @@ export class FileAPI {
    */
   static async copyItem(workspaceId, from, to) {
     try {
-      const response = await apiClient.post(`/files/${workspaceId}/copy`, {
+      const response = await api.post(`/files/${workspaceId}/copy`, {
         from,
         to
       });
@@ -186,7 +151,7 @@ export class FileAPI {
         formData.append('path', path);
       }
 
-      const response = await apiClient.post(`/files/${workspaceId}/upload`, formData, {
+      const response = await api.post(`/files/${workspaceId}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -205,7 +170,7 @@ export class FileAPI {
    */
   static async downloadFile(workspaceId, filePath) {
     try {
-      const response = await apiClient.get(`/files/${workspaceId}/download/${filePath}`, {
+      const response = await api.get(`/files/${workspaceId}/download/${filePath}`, {
         responseType: 'blob'
       });
       return response.data;

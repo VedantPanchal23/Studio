@@ -55,6 +55,7 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
   };
 
   const validateForm = () => {
+    console.log('validateForm called with data:', formData);
     const newErrors = {};
     
     if (!formData.name.trim()) {
@@ -69,14 +70,20 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
       newErrors.description = 'Description must be less than 500 characters';
     }
     
+    console.log('Validation errors found:', newErrors);
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    console.log('Form validation result:', isValid);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData);
+    
     if (!validateForm()) {
+      console.log('Form validation failed:', errors);
       return;
     }
 
@@ -91,7 +98,9 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
         }
       };
 
+      console.log('Calling createWorkspace with:', workspaceData);
       await createWorkspace(workspaceData);
+      console.log('Workspace created successfully!');
       
       // Reset form and close dialog
       setFormData({
@@ -104,14 +113,17 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
       setErrors({});
       onOpenChange(false);
     } catch (error) {
+      console.error('Failed to create workspace:', error);
       // Handle API errors
       if (error.response?.data?.errors) {
+        console.log('Validation errors from backend:', error.response.data.errors);
         const apiErrors = {};
         error.response.data.errors.forEach(err => {
           apiErrors[err.path] = err.msg;
         });
         setErrors(apiErrors);
       } else {
+        console.log('General error:', error.response?.data?.message || error.message);
         setErrors({ 
           general: error.response?.data?.message || 'Failed to create workspace' 
         });
@@ -155,10 +167,12 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
             <Label htmlFor="name">Workspace Name *</Label>
             <Input
               id="name"
+              name="name"
               placeholder="My Awesome Project"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               className={errors.name ? 'border-destructive' : ''}
+              autoComplete="off"
             />
             {errors.name && (
               <p className={styles.fieldError}>{errors.name}</p>
@@ -169,11 +183,13 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
+              name="description"
               placeholder="Brief description of your workspace..."
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               className={errors.description ? 'border-destructive' : ''}
               rows={3}
+              autoComplete="off"
             />
             {errors.description && (
               <p className={styles.fieldError}>{errors.description}</p>
@@ -182,12 +198,13 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
 
           <div className={styles.fieldGrid}>
             <div className={styles.fieldGroup}>
-              <Label htmlFor="runtime">Runtime</Label>
+              <Label htmlFor="runtime-select">Runtime</Label>
               <Select
+                name="runtime"
                 value={formData.runtime}
                 onValueChange={(value) => handleInputChange('runtime', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger id="runtime-select" name="runtime-select">
                   <SelectValue placeholder="Select runtime" />
                 </SelectTrigger>
                 <SelectContent>
@@ -209,9 +226,11 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
               <Label htmlFor="version">Version</Label>
               <Input
                 id="version"
+                name="version"
                 placeholder="latest"
                 value={formData.version}
                 onChange={(e) => handleInputChange('version', e.target.value)}
+                autoComplete="off"
               />
             </div>
           </div>
@@ -219,6 +238,7 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
           <div className={styles.checkboxGroup}>
             <Checkbox
               id="isPublic"
+              name="isPublic"
               checked={formData.isPublic}
               onCheckedChange={(checked) => handleInputChange('isPublic', checked)}
             />
@@ -241,7 +261,7 @@ export const CreateWorkspaceDialog = ({ open, onOpenChange }) => {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading} className={styles.submitButton}>
+            <Button type="submit" disabled={loading} className={styles.submitButton} onClick={() => console.log('Create Workspace button clicked!')}>
               {loading ? (
                 <>
                   <Loader2 className={styles.loadingIcon} />

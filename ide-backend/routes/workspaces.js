@@ -11,14 +11,24 @@ const router = express.Router();
 
 // Validation middleware
 const validateRequest = (req, res, next) => {
+  console.log('validateRequest middleware called');
+  console.log('Request body:', req.body);
+  console.log('Request params:', req.params);
+  console.log('Request query:', req.query);
+  
   const errors = validationResult(req);
+  console.log('Validation errors:', errors.array());
+  
   if (!errors.isEmpty()) {
+    console.log('Validation failed, returning 400 error');
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
       errors: errors.array()
     });
   }
+  
+  console.log('Validation passed, continuing to next middleware');
   next();
 };
 
@@ -228,9 +238,15 @@ router.get('/', authenticateFirebase, async (req, res) => {
 
 // POST /api/workspaces - Create new workspace
 router.post('/', authenticateFirebase, createWorkspaceValidation, validateRequest, async (req, res) => {
+  console.log('=== CREATE WORKSPACE ROUTE CALLED ===');
+  console.log('Request body:', req.body);
+  console.log('User:', req.user);
+  
   try {
     const userId = req.user.id;
     const { name, description, isPublic = false, settings = {} } = req.body;
+
+    console.log('Extracted data:', { userId, name, description, isPublic, settings });
 
     // Check if user already has a workspace with this name
     const existingWorkspace = await Workspace.findOne({
@@ -239,7 +255,10 @@ router.post('/', authenticateFirebase, createWorkspaceValidation, validateReques
       isArchived: false
     });
 
+    console.log('Existing workspace check:', existingWorkspace);
+
     if (existingWorkspace) {
+      console.log('Workspace already exists, returning 409');
       return res.status(409).json({
         success: false,
         message: 'A workspace with this name already exists'
@@ -247,6 +266,7 @@ router.post('/', authenticateFirebase, createWorkspaceValidation, validateReques
     }
 
     // Create workspace
+    console.log('Creating new workspace...');
     const workspace = new Workspace({
       name: name.trim(),
       description: description?.trim() || '',
@@ -769,15 +789,16 @@ router.get('/public/list', async (req, res) => {
 // GET /api/workspaces/stats - Get workspace statistics
 router.get('/stats/overview', authenticateFirebase, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user._id;
+    const userObjectId = new mongoose.Types.ObjectId(userId);
 
     // Get user's workspace statistics
     const userStats = await Workspace.aggregate([
       {
         $match: {
           $or: [
-            { owner: userId },
-            { 'collaborators.userId': userId }
+            { owner: userObjectId },
+            { 'collaborators.userId': userObjectId }
           ]
         }
       },
@@ -786,10 +807,10 @@ router.get('/stats/overview', authenticateFirebase, async (req, res) => {
           _id: null,
           totalWorkspaces: { $sum: 1 },
           ownedWorkspaces: {
-            $sum: { $cond: [{ $eq: ['$owner', userId] }, 1, 0] }
+            $sum: { $cond: [{ $eq: ['$owner', userObjectId] }, 1, 0] }
           },
           collaborativeWorkspaces: {
-            $sum: { $cond: [{ $ne: ['$owner', userId] }, 1, 0] }
+            $sum: { $cond: [{ $ne: ['$owner', userObjectId] }, 1, 0] }
           },
           publicWorkspaces: {
             $sum: { $cond: [{ $eq: ['$isPublic', true] }, 1, 0] }
@@ -818,8 +839,8 @@ router.get('/stats/overview', authenticateFirebase, async (req, res) => {
     // Get recent activity
     const recentWorkspaces = await Workspace.find({
       $or: [
-        { owner: userId },
-        { 'collaborators.userId': userId }
+        { owner: userObjectId },
+        { 'collaborators.userId': userObjectId }
       ],
       isArchived: false
     })

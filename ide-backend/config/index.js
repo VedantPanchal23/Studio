@@ -12,7 +12,7 @@ const config = {
   // CORS configuration
   cors: {
     origin: (origin, callback) => {
-      const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+      const allowed = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:5173')
         .split(',')
         .map(o => o.trim());
       if (!origin) return callback(null, true); // non-browser or same-origin

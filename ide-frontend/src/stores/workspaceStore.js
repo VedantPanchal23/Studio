@@ -90,9 +90,12 @@ export const useWorkspaceStore = create(
       },
       
       createWorkspace: async (workspaceData) => {
+        console.log('WorkspaceStore: Starting createWorkspace with data:', workspaceData);
         set({ loading: true, error: null });
         try {
+          console.log('WorkspaceStore: Calling workspaceAPI.createWorkspace...');
           const response = await workspaceAPI.createWorkspace(workspaceData);
+          console.log('WorkspaceStore: Workspace created successfully:', response);
           const newWorkspace = response.data.workspace;
           
           set((state) => ({
@@ -100,8 +103,15 @@ export const useWorkspaceStore = create(
             loading: false
           }));
           
+          console.log('WorkspaceStore: Store updated with new workspace');
           return response;
         } catch (error) {
+          console.error('WorkspaceStore: Error creating workspace:', error);
+          console.log('WorkspaceStore: Error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+          });
           set({ error: error.message, loading: false });
           throw error;
         }
